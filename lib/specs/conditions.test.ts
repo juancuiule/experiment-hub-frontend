@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { evaluateCondition, getValue } from "./conditions";
+import { evaluateCondition, getValue } from "../conditions";
 
 // ---------------------------------------------------------------------------
 // getValue
