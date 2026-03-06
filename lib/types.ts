@@ -1,0 +1,53 @@
+import { FrameworkEdge } from "./edges";
+import { FrameworkNode, PathNode, LoopNode } from "./nodes";
+
+export type ExperimentFlow = {
+  nodes: FrameworkNode[];
+  edges: FrameworkEdge[];
+};
+
+export type Context = Partial<{
+  start: { group: string };
+  checkpoints: { [checkpointName: string]: string };
+  data: { [screenSlug: string]: Record<string, any> };
+  branches: Record<string, string>;
+  forks: Record<string, string>;
+  paths: { [pathNodeId: string]: { order: string[] } };
+  loops: { [loopNodeId: string]: { order: string[] } };
+}>;
+
+export type InitialState = { type: "initial" };
+export type InNodeState = {
+  type: "in-node";
+  node: Exclude<FrameworkNode, PathNode | LoopNode>;
+};
+export type InPathState = {
+  type: "in-path";
+  node: PathNode;
+  childs: FrameworkNode[];
+  step: number;
+  innerState: State;
+};
+export type InLoopState = {
+  type: "in-loop";
+  node: LoopNode;
+  values: string[];
+  template: FrameworkNode;
+  index: number;
+  innerState: State;
+};
+export type EndState = { type: "end" };
+
+export type State =
+  | InitialState
+  | InNodeState
+  | InPathState
+  | InLoopState
+  | EndState;
+
+// This is a step in the traversal process.
+export type FlowStep<S extends State = State> = {
+  state: S; // current state in the traversal
+  experiment: ExperimentFlow; // the experiment flow being traversed
+  context: Context;
+};
