@@ -392,14 +392,17 @@ export async function traverseInPath(
     const nextStep = state.step + 1;
     if (nextStep < state.childs.length) {
       const nextNode = state.childs[nextStep];
+      const nextInnerState = initialState(experiment, nContext, nextNode);
+      const innerStep = await enterStep({
+        state: nextInnerState,
+        experiment,
+        context: nContext,
+        dataPath: [...(step.dataPath ?? []), state.node.id],
+      });
       return {
         experiment,
-        state: {
-          ...state,
-          step: nextStep,
-          innerState: initialState(experiment, nContext, nextNode),
-        },
-        context: nContext,
+        state: { ...state, step: nextStep, innerState: innerStep.state },
+        context: innerStep.context,
         dataPath: step.dataPath,
       };
     }
@@ -457,18 +460,17 @@ export async function traverseInLoop(
           },
         },
       });
+      const nextInnerState = initialState(experiment, contextWithNextItem, state.template);
+      const innerStep = await enterStep({
+        state: nextInnerState,
+        experiment,
+        context: contextWithNextItem,
+        dataPath: [...(step.dataPath ?? []), state.node.id, state.values[nextIteration]],
+      });
       return {
         experiment,
-        state: {
-          ...state,
-          index: nextIteration,
-          innerState: initialState(
-            experiment,
-            contextWithNextItem,
-            state.template,
-          ),
-        },
-        context: contextWithNextItem,
+        state: { ...state, index: nextIteration, innerState: innerStep.state },
+        context: innerStep.context,
         dataPath: step.dataPath,
       };
     }
