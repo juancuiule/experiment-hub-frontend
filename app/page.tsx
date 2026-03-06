@@ -88,7 +88,6 @@ function Screen({ slug, isLoading, onNext }: ScreenProps) {
           const formData = new FormData(e.currentTarget);
           const json = formData.get("data");
           if (typeof json !== "string" || json.trim() === "") {
-            console.error("No data provided");
             onNext();
           } else {
             const data = JSON.parse(formData.get("data") as string);

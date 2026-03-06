@@ -361,14 +361,14 @@ export async function traverseInNode(
       });
     }
     case "screen": {
-      const nContext = mergeContext(context, {
-        data: { [state.node.props.slug]: data },
-      });
+      const keys = [...(step.dataPath ?? []), state.node.props.slug];
+      const nestedData = keys.reduceRight<Record<string, any>>((acc, key) => ({ [key]: acc }), data ?? {});
+      const nContext = mergeContext(context, { data: nestedData });
       const nNode = getNextSequentialNode(experiment, state.node.id);
       if (!nNode) return { ...step, context: nContext, state: { type: "end" } };
 
       const nState = initialState(experiment, nContext, nNode);
-      return await enterStep({ state: nState, experiment, context: nContext });
+      return await enterStep({ state: nState, experiment, context: nContext, dataPath: step.dataPath });
     }
   }
 }
@@ -382,27 +382,13 @@ export async function traverseInPath(
   // when we receive a "next" action being in a path
   // we traverse the inner state
   const { state: nInnerState, context: nContext } = await traverse(
-    { state: state.innerState, experiment, context },
+    { state: state.innerState, experiment, context, dataPath: [...(step.dataPath ?? []), state.node.id] },
     data,
   );
 
   // If  the inner state returns "end" it means we completed the current
   // child node and should move to the next one in the path
   if (nInnerState.type === "end") {
-    // When the completed child is a screen, move its flat data entry
-    // into a namespace keyed by the path id: data[pathId][screenSlug].
-    const completedChild = state.childs[state.step];
-    let contextAfterChild = nContext;
-    if (completedChild.type === "screen") {
-      const screenSlug = completedChild.props.slug;
-      const pathId = state.node.id;
-      const { [screenSlug]: screenData, ...restData } = nContext.data ?? {};
-      contextAfterChild = mergeContext(
-        { ...nContext, data: restData },
-        { data: { [pathId]: { [screenSlug]: screenData } } },
-      );
-    }
-
     const nextStep = state.step + 1;
     if (nextStep < state.childs.length) {
       const nextNode = state.childs[nextStep];
@@ -411,27 +397,29 @@ export async function traverseInPath(
         state: {
           ...state,
           step: nextStep,
-          innerState: initialState(experiment, contextAfterChild, nextNode),
+          innerState: initialState(experiment, nContext, nextNode),
         },
-        context: contextAfterChild,
+        context: nContext,
+        dataPath: step.dataPath,
       };
     }
 
     const nNode = getNextSequentialNode(experiment, state.node.id);
     if (!nNode) {
-      // return end state if this path is the end of the experiment
       return {
         experiment,
         state: { type: "end" },
-        context: contextAfterChild,
+        context: nContext,
+        dataPath: step.dataPath,
       };
     }
 
-    const nState = initialState(experiment, contextAfterChild, nNode);
+    const nState = initialState(experiment, nContext, nNode);
     return await enterStep({
       state: nState,
       experiment,
-      context: contextAfterChild,
+      context: nContext,
+      dataPath: step.dataPath,
     });
   }
 
@@ -439,6 +427,7 @@ export async function traverseInPath(
     experiment,
     state: { ...state, innerState: nInnerState },
     context: nContext,
+    dataPath: step.dataPath,
   };
 }
 
@@ -451,27 +440,15 @@ export async function traverseInLoop(
   // __currentItem is already in context, injected by autoTraverse on entry
   // and updated here whenever advancing to the next iteration
   const { state: nInnerState, context: nContext } = await traverse(
-    { state: state.innerState, experiment, context },
+    { state: state.innerState, experiment, context, dataPath: [...(step.dataPath ?? []), state.node.id] },
     data,
   );
 
   // Same signal mechanism as in-path: end inner → advance iteration.
   if (nInnerState.type === "end") {
-    // When the template is a screen, namespace its data under the loop id.
-    let contextAfterChild = nContext;
-    if (state.template.type === "screen") {
-      const screenSlug = state.template.props.slug;
-      const loopId = state.node.id;
-      const { [screenSlug]: screenData, ...restData } = nContext.data ?? {};
-      contextAfterChild = mergeContext(
-        { ...nContext, data: restData },
-        { data: { [loopId]: { [screenSlug]: screenData } } },
-      );
-    }
-
     const nextIteration = state.index + 1;
     if (nextIteration < state.values.length) {
-      const contextWithNextItem = mergeContext(contextAfterChild, {
+      const contextWithNextItem = mergeContext(nContext, {
         data: {
           __currentItem: {
             value: state.values[nextIteration],
@@ -492,30 +469,29 @@ export async function traverseInLoop(
           ),
         },
         context: contextWithNextItem,
+        dataPath: step.dataPath,
       };
     }
 
     const nNode = getNextSequentialNode(experiment, state.node.id);
     if (!nNode) {
-      // return end state if this loop is the end of the experiment
       return {
         experiment,
         state: { type: "end" },
-        context: contextAfterChild,
+        context: nContext,
+        dataPath: step.dataPath,
       };
     }
 
     // Strip __currentItem from data when exiting the loop
-    const { __currentItem, ...dataWithoutItem } = contextAfterChild.data ?? {};
-    const contextAfterLoop: Context = {
-      ...contextAfterChild,
-      data: dataWithoutItem,
-    };
+    const { __currentItem, ...dataWithoutItem } = nContext.data ?? {};
+    const contextAfterLoop: Context = { ...nContext, data: dataWithoutItem };
     const nState = initialState(experiment, contextAfterLoop, nNode);
     return await enterStep({
       state: nState,
       experiment,
       context: contextAfterLoop,
+      dataPath: step.dataPath,
     });
   }
 
@@ -523,6 +499,7 @@ export async function traverseInLoop(
     experiment,
     state: { ...state, innerState: nInnerState },
     context: nContext,
+    dataPath: step.dataPath,
   };
 }
 
