@@ -2,6 +2,8 @@
 
 import { FormEvent, useState } from "react";
 import { getActiveState, useExperimentStore } from "../lib/store";
+import { Context } from "../lib/types";
+import { InPathState } from "@/lib/types";
 
 export default function Home() {
   const { step, isLoading, start, next } = useExperimentStore();
@@ -13,10 +15,13 @@ export default function Home() {
       <Layout>
         <h1 className="text-2xl font-semibold mb-6">Experiment</h1>
         <p className="text-zinc-500 mb-8">Choose how you arrived:</p>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <Button onClick={() => start("start-google")}>From Google</Button>
           <Button onClick={() => start("start-facebook")} variant="secondary">
             From Facebook
+          </Button>
+          <Button onClick={() => start()} variant="secondary">
+            Start
           </Button>
         </div>
       </Layout>
@@ -42,10 +47,26 @@ export default function Home() {
   if (activeState.type === "in-node" && activeState.node.type === "screen") {
     return (
       <Layout>
-        {step.state.type === "in-path" && (
-          <p className="text-sm text-zinc-400 mb-4">
-            In path: {step.state.step} of {step.state.childs.length}
-          </p>
+        {step.state.type === "in-path" && step.state.node.props.stepper && (
+          <div className="w-full">
+            <p className={`text-sm text-zinc-400 mb-4`}>
+              {step.state.node.props.stepper.label
+                ?.replace("{index}", String(step.state.step + 1))
+                .replace("{total}", String(step.state.childs.length))}
+            </p>
+            <div className="h-1 flex">
+              {step.state.node.props.stepper.style === "dashed" ? (
+                <>
+                  {step.state.childs.map((child, index) => (
+                    <div
+                      key={index}
+                      className={`h-full flex-1 ${index < (step.state as InPathState).step + 1 ? "bg-black dark:bg-white" : "bg-zinc-300 dark:bg-zinc-600"}`}
+                    />
+                  ))}
+                </>
+              ) : null}
+            </div>
+          </div>
         )}
         <Screen
           slug={activeState.node.props.slug}

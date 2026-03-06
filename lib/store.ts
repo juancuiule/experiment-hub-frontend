@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { experiment } from "./experiment";
+import { experimentLoop as experiment } from "./experiment-loop";
 import { startExperiment, traverse } from "./flow";
 import { FlowStep, State } from "./types";
 

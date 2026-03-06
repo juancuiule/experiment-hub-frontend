@@ -2,168 +2,158 @@ import { ExperimentFlow } from "./types";
 
 export const experiment: ExperimentFlow = {
   nodes: [
+    // ── Entry ──────────────────────────────────────────────────────────────
+    { id: "start", type: "start" },
+
+    // A/B fork: 70 % variant-a, 30 % variant-b
     {
-      id: "start-google",
-      type: "start",
+      id: "fork-intro",
+      type: "fork",
       props: {
-        name: "Start from a google link",
-        param: { key: "source", value: "google" },
+        forks: [
+          { id: "variant-a", name: "Variant A", weight: 7 },
+          { id: "variant-b", name: "Variant B", weight: 3 },
+        ],
       },
     },
+    { id: "screen-intro-a", type: "screen", props: { slug: "intro-a" } },
+    { id: "screen-intro-b", type: "screen", props: { slug: "intro-b" } },
+    { id: "screen-consent", type: "screen", props: { slug: "consent" } },
+
+    // ── Demographics path ──────────────────────────────────────────────────
     {
-      id: "start-facebook",
-      type: "start",
-      props: {
-        name: "Start from a facebook link",
-        param: { key: "source", value: "facebook" },
-      },
-    },
-    // Intro
-    {
-      id: "screen-intro",
-      type: "screen",
-      props: {
-        slug: "intro-screen",
-      },
-    },
-    // Regressors path
-    {
-      id: "path-regressors",
+      id: "path-demographics",
       type: "path",
-      props: {
-        name: "Regressors",
-        description: "This path contains all the regressor nodes",
-        randomized: false,
-        stepper: { label: "{index} of {total}", style: "dashed" },
-      },
+      props: { name: "Demographics", randomized: false },
     },
-    // Regressor screens
+    { id: "screen-demographics-age", type: "screen", props: { slug: "demographics-age" } },
+    { id: "screen-demographics-gender", type: "screen", props: { slug: "demographics-gender" } },
+    { id: "screen-demographics-country", type: "screen", props: { slug: "demographics-country" } },
+
+    // Age gate: minors exit early
     {
-      id: "screen-regressors-age",
-      type: "screen",
-      props: {
-        slug: "regressors-age-screen",
-      },
-    },
-    {
-      id: "screen-regressors-gender",
-      type: "screen",
-      props: {
-        slug: "regressors-gender-screen",
-      },
-    },
-    {
-      id: "screen-regressors-location",
-      type: "screen",
-      props: {
-        slug: "regressors-location-screen",
-      },
-    },
-    // Age related branch
-    {
-      id: "branch-age",
+      id: "branch-age-gate",
       type: "branch",
       props: {
-        name: "Age branch",
-        description: "Branch based on age groups",
+        name: "Age gate",
         branches: [
           {
-            id: "under-18",
+            id: "minor",
             name: "Under 18",
             config: {
               operator: "lt",
               value: 18,
-              dataKey: "$$path-regressors.regressors-age-screen.age",
-            },
-          },
-          {
-            id: "over-18",
-            name: "18 and over",
-            config: {
-              operator: "gte",
-              value: 18,
-              dataKey: "$$path-regressors.regressors-age-screen.age",
+              dataKey: "$$path-demographics.demographics-age.age",
             },
           },
         ],
       },
     },
-    // Under 18 screen
+    { id: "screen-minor-exit", type: "screen", props: { slug: "minor-exit" } },
+
+    // ── Checkpoint ─────────────────────────────────────────────────────────
     {
-      id: "screen-under-18",
-      type: "screen",
-      props: {
-        slug: "under-18-screen",
-      },
-    },
-    // Over 18 screen
-    {
-      id: "screen-over-18",
-      type: "screen",
-      props: {
-        slug: "over-18-screen",
-      },
-    },
-    // Checkpoint
-    {
-      id: "first-checkpoint",
+      id: "checkpoint-demographics",
       type: "checkpoint",
-      props: {
-        name: "First checkpoint",
-      },
+      props: { name: "demographics-complete" },
     },
-    // Finish screen
+
+    // ── Health assessment path (order randomized per user) ─────────────────
     {
-      id: "screen-finish",
-      type: "screen",
+      id: "path-health",
+      type: "path",
+      props: { name: "Health Assessment", randomized: true },
+    },
+    { id: "screen-physical-activity", type: "screen", props: { slug: "physical-activity" } },
+    { id: "screen-sleep-quality", type: "screen", props: { slug: "sleep-quality" } },
+    { id: "screen-stress-level", type: "screen", props: { slug: "stress-level" } },
+
+    // Risk branch based on stress score
+    {
+      id: "branch-risk",
+      type: "branch",
       props: {
-        slug: "finish-screen",
+        name: "Risk level",
+        branches: [
+          {
+            id: "high-stress",
+            name: "High stress",
+            config: {
+              operator: "gte",
+              value: 7,
+              dataKey: "$$path-health.stress-level.level",
+            },
+          },
+        ],
       },
     },
+    {
+      id: "screen-high-stress-resources",
+      type: "screen",
+      props: { slug: "high-stress-resources" },
+    },
+    {
+      id: "screen-standard-resources",
+      type: "screen",
+      props: { slug: "standard-resources" },
+    },
+
+    // ── Goals loop (static values) ─────────────────────────────────────────
+    {
+      id: "loop-goals",
+      type: "loop",
+      props: { type: "static", values: ["nutrition", "fitness", "mindfulness"] },
+    },
+    { id: "screen-goal-item", type: "screen", props: { slug: "goal-item" } },
+
+    // ── Final checkpoint + results ─────────────────────────────────────────
+    {
+      id: "checkpoint-complete",
+      type: "checkpoint",
+      props: { name: "assessment-complete" },
+    },
+    { id: "screen-results", type: "screen", props: { slug: "results" } },
   ],
   edges: [
-    // Start edges
-    { type: "sequential", from: "start-google", to: "screen-intro" },
-    { type: "sequential", from: "start-facebook", to: "screen-intro" },
-    // Intro to regressors path
-    { type: "sequential", from: "screen-intro", to: "path-regressors" },
-    // Path containment edges for regressors
-    {
-      type: "path-contains",
-      from: "path-regressors",
-      to: "screen-regressors-age",
-      order: 0,
-    },
-    {
-      type: "path-contains",
-      from: "path-regressors",
-      to: "screen-regressors-gender",
-      order: 1,
-    },
-    {
-      type: "path-contains",
-      from: "path-regressors",
-      to: "screen-regressors-location",
-      order: 2,
-    },
-    // Path to branch
-    { type: "sequential", from: "path-regressors", to: "branch-age" },
-    // Branch condition edges; branch-default always present as explicit fallback
-    {
-      type: "branch-condition",
-      from: "branch-age.under-18",
-      to: "screen-under-18",
-    },
-    {
-      type: "branch-condition",
-      from: "branch-age.over-18",
-      to: "screen-over-18",
-    },
-    { type: "branch-default", from: "branch-age", to: "screen-over-18" },
-    // Sequential edges to checkpoint
-    { type: "sequential", from: "screen-under-18", to: "first-checkpoint" },
-    { type: "sequential", from: "screen-over-18", to: "first-checkpoint" },
-    // Sequential edge to finish
-    { type: "sequential", from: "first-checkpoint", to: "screen-finish" },
+    // Entry → A/B fork → intro screens → consent
+    { type: "sequential", from: "start", to: "fork-intro" },
+    { type: "fork-edge", from: "fork-intro.variant-a", to: "screen-intro-a" },
+    { type: "fork-edge", from: "fork-intro.variant-b", to: "screen-intro-b" },
+    { type: "sequential", from: "screen-intro-a", to: "screen-consent" },
+    { type: "sequential", from: "screen-intro-b", to: "screen-consent" },
+
+    // Consent → demographics path
+    { type: "sequential", from: "screen-consent", to: "path-demographics" },
+    { type: "path-contains", from: "path-demographics", to: "screen-demographics-age", order: 0 },
+    { type: "path-contains", from: "path-demographics", to: "screen-demographics-gender", order: 1 },
+    { type: "path-contains", from: "path-demographics", to: "screen-demographics-country", order: 2 },
+
+    // Demographics → age gate branch
+    { type: "sequential", from: "path-demographics", to: "branch-age-gate" },
+    { type: "branch-condition", from: "branch-age-gate.minor", to: "screen-minor-exit" },
+    // minors end here (no sequential from screen-minor-exit)
+    { type: "branch-default", from: "branch-age-gate", to: "checkpoint-demographics" },
+
+    // Checkpoint → health path
+    { type: "sequential", from: "checkpoint-demographics", to: "path-health" },
+    { type: "path-contains", from: "path-health", to: "screen-physical-activity", order: 0 },
+    { type: "path-contains", from: "path-health", to: "screen-sleep-quality", order: 1 },
+    { type: "path-contains", from: "path-health", to: "screen-stress-level", order: 2 },
+
+    // Health → risk branch
+    { type: "sequential", from: "path-health", to: "branch-risk" },
+    { type: "branch-condition", from: "branch-risk.high-stress", to: "screen-high-stress-resources" },
+    { type: "branch-default", from: "branch-risk", to: "screen-standard-resources" },
+
+    // Both resource screens → goals loop
+    { type: "sequential", from: "screen-high-stress-resources", to: "loop-goals" },
+    { type: "sequential", from: "screen-standard-resources", to: "loop-goals" },
+
+    // Goals loop
+    { type: "loop-template", from: "loop-goals", to: "screen-goal-item" },
+    { type: "sequential", from: "loop-goals", to: "checkpoint-complete" },
+
+    // Final checkpoint → results
+    { type: "sequential", from: "checkpoint-complete", to: "screen-results" },
   ],
 };
