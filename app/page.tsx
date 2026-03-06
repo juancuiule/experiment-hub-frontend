@@ -1,29 +1,17 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { getActiveState, useExperimentStore } from "../lib/store";
-import { Context } from "../lib/types";
-import { InPathState } from "@/lib/types";
+import { useState } from "react";
+import { getActiveState } from "../lib/flow";
+import { useExperimentStore } from "../lib/store";
 
 export default function Home() {
   const { step, isLoading, start, next } = useExperimentStore();
-
-  console.log("Current step:", step);
 
   if (!step) {
     return (
       <Layout>
         <h1 className="text-2xl font-semibold mb-6">Experiment</h1>
-        <p className="text-zinc-500 mb-8">Choose how you arrived:</p>
-        <div className="flex gap-3 flex-wrap">
-          <Button onClick={() => start("start-google")}>From Google</Button>
-          <Button onClick={() => start("start-facebook")} variant="secondary">
-            From Facebook
-          </Button>
-          <Button onClick={() => start()} variant="secondary">
-            Start
-          </Button>
-        </div>
+        <Button onClick={() => start()}>Start</Button>
       </Layout>
     );
   }
@@ -48,23 +36,30 @@ export default function Home() {
     return (
       <Layout>
         {step.state.type === "in-path" && step.state.node.props.stepper && (
-          <div className="w-full">
-            <p className={`text-sm text-zinc-400 mb-4`}>
+          <div className="w-full mb-6">
+            <p className="text-sm text-zinc-400 mb-2">
               {step.state.node.props.stepper.label
                 ?.replace("{index}", String(step.state.step + 1))
-                .replace("{total}", String(step.state.childs.length))}
+                .replace("{total}", String(step.state.childrens.length))}
             </p>
-            <div className="h-1 flex">
+            <div className="h-1 w-full bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
               {step.state.node.props.stepper.style === "dashed" ? (
-                <>
-                  {step.state.childs.map((child, index) => (
+                <div className="h-full flex gap-0.5">
+                  {step.state.childrens.map((_, index) => (
                     <div
                       key={index}
-                      className={`h-full flex-1 ${index < (step.state as InPathState).step + 1 ? "bg-black dark:bg-white" : "bg-zinc-300 dark:bg-zinc-600"}`}
+                      className={`h-full flex-1 ${index < step.state.step + 1 ? "bg-black dark:bg-white" : "bg-zinc-300 dark:bg-zinc-600"}`}
                     />
                   ))}
-                </>
-              ) : null}
+                </div>
+              ) : (
+                <div
+                  className="h-full bg-black dark:bg-white transition-all duration-300"
+                  style={{
+                    width: `${((step.state.step + 1) / step.state.childrens.length) * 100}%`,
+                  }}
+                />
+              )}
             </div>
           </div>
         )}
@@ -73,7 +68,7 @@ export default function Home() {
           isLoading={isLoading}
           onNext={next}
         />
-        <pre className="font-mono text-xs">
+        <pre className="font-mono text-xs mt-6">
           <code>{JSON.stringify(step.context, null, 2)}</code>
         </pre>
       </Layout>
@@ -99,27 +94,34 @@ type ScreenProps = {
 };
 
 function Screen({ slug, isLoading, onNext }: ScreenProps) {
+  const [error, setError] = useState<string | null>(null);
+
   return (
     <div>
       <span>screen slug: {slug}</span>
       <form
         onSubmit={(e) => {
-          // get form data
           e.preventDefault();
+          setError(null);
           const formData = new FormData(e.currentTarget);
           const json = formData.get("data");
           if (typeof json !== "string" || json.trim() === "") {
             onNext();
           } else {
-            const data = JSON.parse(formData.get("data") as string);
-            onNext(data);
+            try {
+              const data = JSON.parse(json);
+              onNext(data);
+            } catch {
+              setError("Invalid JSON — please check your input.");
+            }
           }
         }}
       >
         <textarea
           name="data"
-          className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 mb-6 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+          className="w-full border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 mb-2 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
         />
+        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         <Button type="submit" disabled={isLoading}>
           {isLoading ? "Loading…" : "Continue"}
         </Button>

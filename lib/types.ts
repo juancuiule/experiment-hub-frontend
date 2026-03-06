@@ -9,7 +9,7 @@ export type ExperimentFlow = {
 export type Context = Partial<{
   start: { group: string };
   checkpoints: { [checkpointName: string]: string };
-  data: { [screenSlug: string]: Record<string, any> };
+  data: Record<string, any>;
   branches: Record<string, string>;
   forks: Record<string, string>;
   paths: { [pathNodeId: string]: { order: string[] } };
@@ -24,7 +24,7 @@ export type InNodeState = {
 export type InPathState = {
   type: "in-path";
   node: PathNode;
-  childs: FrameworkNode[];
+  childrens: FrameworkNode[];
   step: number;
   innerState: State;
 };

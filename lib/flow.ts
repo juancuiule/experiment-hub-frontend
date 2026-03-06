@@ -68,20 +68,22 @@ function initialState(
       };
     }
     case "path": {
-      const childs = getChildNodes(experiment, node.id);
+      const childrens = getChildNodes(experiment, node.id);
 
-      if (!childs || childs.length === 0) {
+      if (!childrens || childrens.length === 0) {
         throw new Error("Path node must have child nodes");
       }
 
-      const childsInOrder = node.props.randomized ? shuffle(childs) : childs;
+      const childrensInOrder = node.props.randomized
+        ? shuffle(childrens)
+        : childrens;
 
       return {
         type: "in-path" as const,
         node,
-        childs: childsInOrder,
+        childrens: childrensInOrder,
         step: 0,
-        innerState: initialState(experiment, context, childsInOrder[0]),
+        innerState: initialState(experiment, context, childrensInOrder[0]),
       };
     }
   }
@@ -90,23 +92,20 @@ function initialState(
 // This function handles entering a step, applying any auto-traversal logic if needed.
 async function enterStep(step: FlowStep): Promise<FlowStep> {
   if (step.state.type === "in-loop") {
-    // Inject __currentItem into context.data so screens inside the loop can reference it
     const { values, index, node } = step.state;
-    const contextWithItem = mergeContext(step.context, {
-      data: { __currentItem: { value: values[index], index, loopId: node.id } },
-      loops: {
-        [node.id]: { order: values },
-      },
-    });
+    const contextWithItem = mergeContext(
+      withCurrentItem(step.context, node.id, values, index),
+      { loops: { [node.id]: { order: values } } },
+    );
     return { ...step, context: contextWithItem };
   }
   if (step.state.type === "in-path") {
-    const { node, childs } = step.state;
+    const { node, childrens } = step.state;
     return {
       ...step,
       context: mergeContext(step.context, {
         paths: {
-          [node.id]: { order: childs.map((child) => child.id) },
+          [node.id]: { order: childrens.map((child) => child.id) },
         },
       }),
     };
@@ -240,6 +239,7 @@ result: {
   }
 }
 */
+// Arrays are replaced wholesale, not recursively merged.
 function deepMerge(target: any, source: any): any {
   const result = { ...target };
   for (const key of Object.keys(source)) {
@@ -255,6 +255,31 @@ function deepMerge(target: any, source: any): any {
 
 function mergeContext(context: Context, toMerge: Context): Context {
   return deepMerge(context, toMerge);
+}
+
+function withCurrentItem(
+  context: Context,
+  loopId: string,
+  values: string[],
+  index: number,
+): Context {
+  return mergeContext(context, {
+    data: { __currentItem: { value: values[index], index, loopId } },
+  });
+}
+
+async function exitToNextNode(
+  experiment: ExperimentFlow,
+  context: Context,
+  nodeId: string,
+  dataPath: string[],
+): Promise<FlowStep> {
+  const nNode = getNextSequentialNode(experiment, nodeId);
+  if (!nNode) {
+    return { experiment, state: { type: "end" }, context, dataPath };
+  }
+  const nState = initialState(experiment, context, nNode);
+  return enterStep({ state: nState, experiment, context, dataPath });
 }
 
 function selectForkByWeight(forks: Fork[]): Fork {
@@ -362,13 +387,21 @@ export async function traverseInNode(
     }
     case "screen": {
       const keys = [...(step.dataPath ?? []), state.node.props.slug];
-      const nestedData = keys.reduceRight<Record<string, any>>((acc, key) => ({ [key]: acc }), data ?? {});
+      const nestedData = keys.reduceRight<Record<string, any>>(
+        (acc, key) => ({ [key]: acc }),
+        data ?? {},
+      );
       const nContext = mergeContext(context, { data: nestedData });
       const nNode = getNextSequentialNode(experiment, state.node.id);
       if (!nNode) return { ...step, context: nContext, state: { type: "end" } };
 
       const nState = initialState(experiment, nContext, nNode);
-      return await enterStep({ state: nState, experiment, context: nContext, dataPath: step.dataPath });
+      return await enterStep({
+        state: nState,
+        experiment,
+        context: nContext,
+        dataPath: step.dataPath,
+      });
     }
   }
 }
@@ -382,16 +415,21 @@ export async function traverseInPath(
   // when we receive a "next" action being in a path
   // we traverse the inner state
   const { state: nInnerState, context: nContext } = await traverse(
-    { state: state.innerState, experiment, context, dataPath: [...(step.dataPath ?? []), state.node.id] },
+    {
+      state: state.innerState,
+      experiment,
+      context,
+      dataPath: [...(step.dataPath ?? []), state.node.id],
+    },
     data,
   );
 
-  // If  the inner state returns "end" it means we completed the current
+  // If the inner state returns "end" it means we completed the current
   // child node and should move to the next one in the path
   if (nInnerState.type === "end") {
     const nextStep = state.step + 1;
-    if (nextStep < state.childs.length) {
-      const nextNode = state.childs[nextStep];
+    if (nextStep < state.childrens.length) {
+      const nextNode = state.childrens[nextStep];
       const nextInnerState = initialState(experiment, nContext, nextNode);
       const innerStep = await enterStep({
         state: nextInnerState,
@@ -407,23 +445,7 @@ export async function traverseInPath(
       };
     }
 
-    const nNode = getNextSequentialNode(experiment, state.node.id);
-    if (!nNode) {
-      return {
-        experiment,
-        state: { type: "end" },
-        context: nContext,
-        dataPath: step.dataPath,
-      };
-    }
-
-    const nState = initialState(experiment, nContext, nNode);
-    return await enterStep({
-      state: nState,
-      experiment,
-      context: nContext,
-      dataPath: step.dataPath,
-    });
+    return exitToNextNode(experiment, nContext, state.node.id, step.dataPath ?? []);
   }
 
   return {
@@ -443,7 +465,16 @@ export async function traverseInLoop(
   // __currentItem is already in context, injected by autoTraverse on entry
   // and updated here whenever advancing to the next iteration
   const { state: nInnerState, context: nContext } = await traverse(
-    { state: state.innerState, experiment, context, dataPath: [...(step.dataPath ?? []), state.node.id, state.values[state.index]] },
+    {
+      state: state.innerState,
+      experiment,
+      context,
+      dataPath: [
+        ...(step.dataPath ?? []),
+        state.node.id,
+        state.values[state.index],
+      ],
+    },
     data,
   );
 
@@ -451,21 +482,26 @@ export async function traverseInLoop(
   if (nInnerState.type === "end") {
     const nextIteration = state.index + 1;
     if (nextIteration < state.values.length) {
-      const contextWithNextItem = mergeContext(nContext, {
-        data: {
-          __currentItem: {
-            value: state.values[nextIteration],
-            index: nextIteration,
-            loopId: state.node.id,
-          },
-        },
-      });
-      const nextInnerState = initialState(experiment, contextWithNextItem, state.template);
+      const contextWithNextItem = withCurrentItem(
+        nContext,
+        state.node.id,
+        state.values,
+        nextIteration,
+      );
+      const nextInnerState = initialState(
+        experiment,
+        contextWithNextItem,
+        state.template,
+      );
       const innerStep = await enterStep({
         state: nextInnerState,
         experiment,
         context: contextWithNextItem,
-        dataPath: [...(step.dataPath ?? []), state.node.id, state.values[nextIteration]],
+        dataPath: [
+          ...(step.dataPath ?? []),
+          state.node.id,
+          state.values[nextIteration],
+        ],
       });
       return {
         experiment,
@@ -475,26 +511,10 @@ export async function traverseInLoop(
       };
     }
 
-    const nNode = getNextSequentialNode(experiment, state.node.id);
-    if (!nNode) {
-      return {
-        experiment,
-        state: { type: "end" },
-        context: nContext,
-        dataPath: step.dataPath,
-      };
-    }
-
     // Strip __currentItem from data when exiting the loop
     const { __currentItem, ...dataWithoutItem } = nContext.data ?? {};
     const contextAfterLoop: Context = { ...nContext, data: dataWithoutItem };
-    const nState = initialState(experiment, contextAfterLoop, nNode);
-    return await enterStep({
-      state: nState,
-      experiment,
-      context: contextAfterLoop,
-      dataPath: step.dataPath,
-    });
+    return exitToNextNode(experiment, contextAfterLoop, state.node.id, step.dataPath ?? []);
   }
 
   return {
@@ -527,4 +547,11 @@ async function getWinnerFork(experiment: ExperimentFlow, forkNode: ForkNode) {
   const nNode = getForkEdgeNode(experiment, forkNode.id, winner.id);
 
   return { nNode, winnerId: winner.id };
+}
+
+// Resolves the innermost active state by unwrapping in-path / in-loop wrappers.
+export function getActiveState(state: State): State {
+  if (state.type === "in-path") return getActiveState(state.innerState);
+  if (state.type === "in-loop") return getActiveState(state.innerState);
+  return state;
 }

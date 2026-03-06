@@ -55,12 +55,6 @@ export function isSequentialEdge(edge: FrameworkEdge): edge is SequentialEdge {
   return edge.type === "sequential";
 }
 
-export function isBranchEdge(
-  edge: FrameworkEdge,
-): edge is BranchConditionEdge | BranchDefaultEdge {
-  return edge.type === "branch-condition" || edge.type === "branch-default";
-}
-
 export function isBranchConditionEdge(
   edge: FrameworkEdge,
 ): edge is BranchConditionEdge {

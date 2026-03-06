@@ -16,12 +16,22 @@ export const experimentLoop: ExperimentFlow = {
     { id: "screen-sport-joy", type: "screen", props: { slug: "sport-joy" } },
     { id: "screen-sport-times", type: "screen", props: { slug: "sport-time" } },
     { id: "screen-results", type: "screen", props: { slug: "results" } },
+    {
+      id: "checkpoint-per-sport",
+      type: "checkpoint",
+      props: { name: "per-sport-complete" },
+    },
   ],
   edges: [
     { type: "sequential", from: "start", to: "screen-sports" },
     { type: "sequential", from: "screen-sports", to: "loop-sports" },
     { type: "loop-template", from: "loop-sports", to: "screen-sport-joy" },
     { type: "sequential", from: "screen-sport-joy", to: "screen-sport-times" },
+    {
+      type: "sequential",
+      from: "screen-sport-times",
+      to: "checkpoint-per-sport",
+    },
 
     { type: "sequential", from: "loop-sports", to: "screen-results" },
   ],

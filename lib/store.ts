@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import { experimentLoop as experiment } from "./experiment-loop";
+import { experiment } from "./experiment";
 import { startExperiment, traverse } from "./flow";
-import { FlowStep, State } from "./types";
+import { FlowStep } from "./types";
 
 type ExperimentStore = {
   step: FlowStep | null;
@@ -15,21 +15,24 @@ export const useExperimentStore = create<ExperimentStore>((set, get) => ({
   isLoading: false,
   start: async (startNodeId?: string) => {
     set({ isLoading: true });
-    const step = await startExperiment(experiment, startNodeId);
-    set({ step, isLoading: false });
+    try {
+      const step = await startExperiment(experiment, startNodeId);
+      set({ step, isLoading: false });
+    } catch (err) {
+      set({ isLoading: false });
+      throw err;
+    }
   },
   next: async (data?: Record<string, any>) => {
     const { step } = get();
     if (!step) return;
     set({ isLoading: true });
-    const nextStep = await traverse(step, data);
-    set({ step: nextStep, isLoading: false });
+    try {
+      const nextStep = await traverse(step, data);
+      set({ step: nextStep, isLoading: false });
+    } catch (err) {
+      set({ isLoading: false });
+      throw err;
+    }
   },
 }));
-
-// Resolves the innermost active state by unwrapping in-path / in-loop wrappers.
-export function getActiveState(state: State): State {
-  if (state.type === "in-path") return getActiveState(state.innerState);
-  if (state.type === "in-loop") return getActiveState(state.innerState);
-  return state;
-}
