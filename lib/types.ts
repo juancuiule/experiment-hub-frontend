@@ -1,9 +1,11 @@
 import { FrameworkEdge } from "./edges";
 import { FrameworkNode, PathNode, LoopNode } from "./nodes";
+import { FrameworkScreen } from "./screen";
 
 export type ExperimentFlow = {
   nodes: FrameworkNode[];
   edges: FrameworkEdge[];
+  screens: FrameworkScreen[];
 };
 
 export type Context = Partial<{
