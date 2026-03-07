@@ -1,67 +1,180 @@
 import { ExperimentFlow } from "@/lib/types";
 
+// Daily Habits & Wellbeing Check-in
+//
+// Flow:
+//   start
+//   → screen-welcome          (name input)
+//   → path-profile            (stepper, 2 screens)
+//       screen-demographics   (age + city inputs)
+//       screen-activities     (checkbox: pick daily activities)
+//   → checkpoint-profile
+//   → branch-engagement       (length-gte 3 activities?)
+//       engaged →  screen-high-engagement  (overall satisfaction rating)
+//       default →  screen-low-engagement   (aspiration input)
+//   → loop-activities         (dynamic: selected activities)
+//       screen-activity-detail  (@value labels: enjoyment + consistency ratings)
+//   → checkpoint-complete
 export const experiment: ExperimentFlow = {
   nodes: [
     { id: "start", type: "start" },
-    { id: "sports-screen", type: "screen", props: { slug: "sports" } },
+
+    { id: "screen-welcome", type: "screen", props: { slug: "welcome" } },
+
     {
-      id: "loop-sports",
+      id: "path-profile",
+      type: "path",
+      props: { name: "Profile", stepper: { style: "dashed" } },
+    },
+    { id: "screen-demographics", type: "screen", props: { slug: "demographics" } },
+    { id: "screen-activities", type: "screen", props: { slug: "activities" } },
+
+    { id: "checkpoint-profile", type: "checkpoint", props: { name: "profile-complete" } },
+
+    {
+      id: "branch-engagement",
+      type: "branch",
+      props: {
+        name: "Engagement level",
+        branches: [
+          {
+            id: "engaged",
+            name: "Highly engaged",
+            config: {
+              operator: "length-gte",
+              dataKey: "$$path-profile.activities.activities",
+              value: 3,
+            },
+          },
+        ],
+      },
+    },
+    { id: "screen-high-engagement", type: "screen", props: { slug: "high-engagement" } },
+    { id: "screen-low-engagement", type: "screen", props: { slug: "low-engagement" } },
+
+    {
+      id: "loop-activities",
       type: "loop",
-      props: { type: "dynamic", dataKey: "$$sports.favorite-sports" },
+      props: {
+        type: "dynamic",
+        dataKey: "$$path-profile.activities.activities",
+        stepper: { label: "Activity {index} of {total}", style: "dashed" },
+      },
     },
-    { id: "screen-sport-item", type: "screen", props: { slug: "sport-item" } },
-    {
-      id: "checkpoint-complete",
-      type: "checkpoint",
-      props: { name: "complete" },
-    },
+    { id: "screen-activity-detail", type: "screen", props: { slug: "activity-detail" } },
+
+    { id: "checkpoint-complete", type: "checkpoint", props: { name: "complete" } },
   ],
+
   edges: [
-    { type: "sequential", from: "start", to: "sports-screen" },
-    { type: "sequential", from: "sports-screen", to: "loop-sports" },
-    { type: "loop-template", from: "loop-sports", to: "screen-sport-item" },
-    { type: "sequential", from: "loop-sports", to: "checkpoint-complete" },
+    { type: "sequential", from: "start", to: "screen-welcome" },
+    { type: "sequential", from: "screen-welcome", to: "path-profile" },
+
+    { type: "path-contains", from: "path-profile", to: "screen-demographics", order: 0 },
+    { type: "path-contains", from: "path-profile", to: "screen-activities", order: 1 },
+
+    { type: "sequential", from: "path-profile", to: "checkpoint-profile" },
+    { type: "sequential", from: "checkpoint-profile", to: "branch-engagement" },
+
+    { type: "branch-condition", from: "branch-engagement.engaged", to: "screen-high-engagement" },
+    { type: "branch-default", from: "branch-engagement", to: "screen-low-engagement" },
+
+    { type: "sequential", from: "screen-high-engagement", to: "loop-activities" },
+    { type: "sequential", from: "screen-low-engagement", to: "loop-activities" },
+
+    { type: "loop-template", from: "loop-activities", to: "screen-activity-detail" },
+    { type: "sequential", from: "loop-activities", to: "checkpoint-complete" },
   ],
+
   screens: [
     {
-      slug: "sports",
+      slug: "welcome",
       components: [
         {
-          type: "checkbox-group",
-          label: "What are your favorite sports?",
-          dataKey: "favorite-sports",
-          options: [
-            { label: "Soccer", value: "soccer" },
-            { label: "Basketball", value: "basketball" },
-            { label: "Tennis", value: "tennis" },
-            { label: "Swimming", value: "swimming" },
-          ],
+          type: "input",
+          dataKey: "name",
+          label: "What's your name?",
+          placeholder: "Your name",
         },
-        {
-          type: "button",
-          label: "Submit",
-        },
+        { type: "button", label: "Begin" },
       ],
     },
     {
-      slug: "sport-item",
+      slug: "demographics",
+      components: [
+        {
+          type: "input",
+          dataKey: "age",
+          label: "How old are you?",
+          placeholder: "e.g. 28",
+        },
+        {
+          type: "input",
+          dataKey: "city",
+          label: "What city do you live in?",
+          placeholder: "e.g. Buenos Aires",
+        },
+        { type: "button", label: "Next" },
+      ],
+    },
+    {
+      slug: "activities",
+      components: [
+        {
+          type: "checkbox-group",
+          dataKey: "activities",
+          label: "Which activities are part of your daily routine?",
+          options: [
+            { label: "Exercise", value: "exercise" },
+            { label: "Cooking", value: "cooking" },
+            { label: "Reading", value: "reading" },
+            { label: "Meditation", value: "meditation" },
+            { label: "Outdoor walks", value: "outdoor-walks" },
+          ],
+        },
+        { type: "button", label: "Next" },
+      ],
+    },
+    {
+      slug: "high-engagement",
+      components: [
+        {
+          type: "rating",
+          dataKey: "overall-satisfaction",
+          label: "Nice work, $$welcome.name! How satisfied are you with your current routine overall?",
+          scale: 5,
+        },
+        { type: "button", label: "Continue" },
+      ],
+    },
+    {
+      slug: "low-engagement",
+      components: [
+        {
+          type: "input",
+          dataKey: "aspiration",
+          label: "Hi $$welcome.name! What's one habit you'd like to build?",
+          placeholder: "e.g. morning walks",
+        },
+        { type: "button", label: "Continue" },
+      ],
+    },
+    {
+      slug: "activity-detail",
       components: [
         {
           type: "rating",
           dataKey: "enjoyment",
-          label: "How much do you enjoy playing @value?",
+          label: "How much do you enjoy @value?",
           scale: 5,
         },
         {
           type: "rating",
-          dataKey: "skill",
-          label: "How good are you at @value?",
+          dataKey: "consistency",
+          label: "How consistent are you with @value?",
           scale: 5,
         },
-        {
-          type: "button",
-          label: "Next",
-        },
+        { type: "button", label: "Next" },
       ],
     },
   ],

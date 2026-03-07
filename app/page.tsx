@@ -1,23 +1,10 @@
 "use client";
 
 import { getActiveState } from "@/lib/flow";
-import { FrameworkScreen } from "@/lib/screen";
 import Button from "@/src/components/Button";
-import CheckboxGroup from "@/src/components/CheckboxGroup";
-import Rating from "@/src/components/Rating";
+import { Screen } from "@/src/components/Screen";
 import Stepper from "@/src/components/Stepper";
 import { useExperimentStore } from "@/src/data/store";
-import { useState } from "react";
-import { Context } from "@/lib/types";
-import { getValue } from "@/lib/conditions";
-
-function resolveLabel(label: string, context: Context): string {
-  return label.replace(/(\$\$[\w.-]+|@[\w.]+)/g, (match) => {
-    const key = match as `$$${string}` | `@${string}`;
-    const resolved = getValue(context, key);
-    return resolved != null ? String(resolved) : match;
-  });
-}
 
 export default function Home() {
   const { step, isLoading, start, next } = useExperimentStore();
@@ -66,6 +53,13 @@ export default function Home() {
             total={step.state.childrens.length}
           />
         )}
+        {step.state.type === "in-loop" && step.state.node.props.stepper && (
+          <Stepper
+            config={step.state.node.props.stepper}
+            step={step.state.index}
+            total={step.state.values.length}
+          />
+        )}
         {screen ? (
           <Screen
             screen={screen}
@@ -88,98 +82,5 @@ export default function Home() {
     <>
       <p className="text-zinc-400">Loading…</p>
     </>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Screen renderer — maps each slug to its UI
-// ---------------------------------------------------------------------------
-
-type ScreenProps = {
-  screen: FrameworkScreen;
-  isLoading: boolean;
-  onNext: (data?: Record<string, any>) => Promise<void>;
-  context: Context;
-};
-
-function Screen({ screen, isLoading, onNext, context }: ScreenProps) {
-  const [error, setError] = useState<string | null>(null);
-
-  return (
-    <div>
-      <span>screen slug: {screen.slug}</span>
-      <form
-        key={screen.slug}
-        onSubmit={(e) => {
-          e.preventDefault();
-          const target = e.currentTarget;
-          setError(null);
-          const formData = new FormData(target);
-          const data = screen.components
-            .map((component) => {
-              switch (component.type) {
-                case "button": {
-                  return {};
-                }
-                case "checkbox-group": {
-                  const values = formData.getAll(component.dataKey) as string[];
-                  return { [component.dataKey]: values };
-                }
-                case "rating": {
-                  const value = formData.get(component.dataKey);
-                  return { [component.dataKey]: value };
-                }
-              }
-            })
-            .reduce((acc, curr) => ({ ...acc, ...curr }), {});
-
-          onNext(data).then(() => {
-            if (target !== null) {
-              target.reset();
-            }
-          });
-        }}
-      >
-        {screen.components.map((component, i) => {
-          switch (component.type) {
-            case "button": {
-              return (
-                <Button
-                  key={i}
-                  label={
-                    isLoading
-                      ? "Loading..."
-                      : resolveLabel(component.label, context)
-                  }
-                />
-              );
-            }
-            case "checkbox-group": {
-              return (
-                <CheckboxGroup
-                  key={component.dataKey}
-                  {...component}
-                  label={resolveLabel(component.label, context)}
-                />
-              );
-            }
-            case "rating": {
-              return (
-                <Rating
-                  key={component.dataKey}
-                  {...component}
-                  label={resolveLabel(component.label, context)}
-                />
-              );
-            }
-            case "input": {
-              return null;
-            }
-          }
-          return null;
-        })}
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-      </form>
-    </div>
   );
 }

@@ -43,13 +43,15 @@ export interface BranchNode extends BaseNode {
   };
 }
 
+export type StepperConfig = { label?: string; style?: "continuous" | "dashed" };
+
 export interface PathNode extends BaseNode {
   type: "path";
   props: {
     name: string;
     description?: string;
     randomized?: boolean;
-    stepper?: { label?: string; style?: "continuous" | "dashed" };
+    stepper?: StepperConfig;
   };
 }
 
@@ -69,15 +71,10 @@ export interface ForkNode extends BaseNode {
 
 export interface LoopNode extends BaseNode {
   type: "loop";
-  props:
-    | {
-        type: "static";
-        values: string[]; // eg: ["football", "basketball", "tennis"]
-      }
-    | {
-        type: "dynamic";
-        dataKey: `$$${string}`; // eg: $$sports
-      };
+  props: (
+    | { type: "static"; values: string[] }
+    | { type: "dynamic"; dataKey: `$$${string}` }
+  ) & { stepper?: StepperConfig };
 }
 
 export type FrameworkNode =
