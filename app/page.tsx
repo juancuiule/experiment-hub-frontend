@@ -50,7 +50,7 @@ export default function Home() {
           <Stepper
             config={step.state.node.props.stepper}
             step={step.state.step}
-            total={step.state.childrens.length}
+            total={step.state.children.length}
           />
         )}
         {step.state.type === "in-loop" && step.state.node.props.stepper && (
@@ -62,6 +62,7 @@ export default function Home() {
         )}
         {screen ? (
           <Screen
+            key={screen.slug}
             screen={screen}
             isLoading={isLoading}
             onNext={next}

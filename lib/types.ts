@@ -27,7 +27,7 @@ export type InNodeState = {
 export type InPathState = {
   type: "in-path";
   node: PathNode;
-  childrens: FrameworkNode[];
+  children: FrameworkNode[];
   step: number;
   innerState: State;
 };

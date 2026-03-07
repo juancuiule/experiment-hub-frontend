@@ -1,7 +1,7 @@
 "use client";
-import { getValue } from "@/lib/conditions";
 import { FrameworkScreen } from "@/lib/screen";
 import { Context } from "@/lib/types";
+import { resolveValuesInString } from "@/lib/resolve";
 import { buildSchema, FieldErrors } from "@/lib/validation";
 import { useState } from "react";
 import Button from "./Button";
@@ -16,14 +16,6 @@ type ScreenProps = {
   onNext: (data?: Record<string, any>) => Promise<void>;
   context: Context;
 };
-
-function resolveValuesInString(text: string, context: Context): string {
-  return text.replace(/(\$\$[\w.-]+|@[\w.]+)/g, (match) => {
-    const key = match as `$$${string}` | `@${string}`;
-    const resolved = getValue(context, key);
-    return resolved != null ? String(resolved) : match;
-  });
-}
 
 export function Screen({ screen, isLoading, onNext, context }: ScreenProps) {
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -73,11 +65,10 @@ export function Screen({ screen, isLoading, onNext, context }: ScreenProps) {
           }
 
           setErrors({});
-          onNext(result.data).then(() => {
-            if (target !== null) {
-              target.reset();
-            }
-          });
+          // TODO: surface error to user (toast / inline message)
+          onNext(result.data)
+            .then(() => { target?.reset(); })
+            .catch((err) => console.error("Failed to advance experiment:", err));
         }}
       >
         {screen.components.map((component, i) => {

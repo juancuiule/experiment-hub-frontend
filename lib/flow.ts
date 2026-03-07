@@ -68,22 +68,22 @@ function initialState(
       };
     }
     case "path": {
-      const childrens = getChildNodes(experiment, node.id);
+      const children = getChildNodes(experiment, node.id);
 
-      if (!childrens || childrens.length === 0) {
+      if (!children || children.length === 0) {
         throw new Error("Path node must have child nodes");
       }
 
-      const childrensInOrder = node.props.randomized
-        ? shuffle(childrens)
-        : childrens;
+      const childrenInOrder = node.props.randomized
+        ? shuffle(children)
+        : children;
 
       return {
         type: "in-path" as const,
         node,
-        childrens: childrensInOrder,
+        children: childrenInOrder,
         step: 0,
-        innerState: initialState(experiment, context, childrensInOrder[0]),
+        innerState: initialState(experiment, context, childrenInOrder[0]),
       };
     }
   }
@@ -107,12 +107,12 @@ async function enterStep(step: FlowStep): Promise<FlowStep> {
     return { ...step, context: contextWithItem };
   }
   if (step.state.type === "in-path") {
-    const { node, childrens } = step.state;
+    const { node, children } = step.state;
     return {
       ...step,
       context: mergeContext(step.context, {
         paths: {
-          [node.id]: { order: childrens.map((child) => child.id) },
+          [node.id]: { order: children.map((child) => child.id) },
         },
       }),
     };
@@ -435,8 +435,8 @@ export async function traverseInPath(
   // child node and should move to the next one in the path
   if (nInnerState.type === "end") {
     const nextStep = state.step + 1;
-    if (nextStep < state.childrens.length) {
-      const nextNode = state.childrens[nextStep];
+    if (nextStep < state.children.length) {
+      const nextNode = state.children[nextStep];
       const nextInnerState = initialState(experiment, nContext, nextNode);
       const innerStep = await enterStep({
         state: nextInnerState,

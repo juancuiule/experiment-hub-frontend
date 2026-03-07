@@ -1,10 +1,14 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Screen } from "../Screen";
 import { FrameworkScreen } from "@/lib/screen";
 
 const noop = vi.fn().mockResolvedValue(undefined);
+
+beforeEach(() => {
+  noop.mockClear();
+});
 
 function renderScreen(
   components: FrameworkScreen["components"],
