@@ -13,7 +13,7 @@ function componentSchema(component: ScreenComponent): [string, z.ZodTypeAny] | n
         : null;
     case "rating":
       return component.required
-        ? [component.dataKey, z.string().min(1, "Please select a rating")]
+        ? [component.dataKey, z.preprocess((v) => v ?? "", z.string().min(1, "Please select a rating"))]
         : null;
     default:
       return null;
