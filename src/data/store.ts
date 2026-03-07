@@ -1,7 +1,7 @@
+import { startExperiment, traverse } from "@/lib/flow";
+import { FlowStep } from "@/lib/types";
 import { create } from "zustand";
 import { experiment } from "./experiment";
-import { startExperiment, traverse } from "./flow";
-import { FlowStep } from "./types";
 
 type ExperimentStore = {
   step: FlowStep | null;

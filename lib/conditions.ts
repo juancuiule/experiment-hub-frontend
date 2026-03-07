@@ -8,7 +8,7 @@ export type ArrayOperator = "contains" | `length-${BaseOperator}`;
 export type Operator = BaseOperator | ArrayOperator;
 export type ConditionConfig = {
   operator: Operator;
-  dataKey: `$$${string}`;
+  dataKey: `$$${string}` | `@${string}`;
   value: string | number | boolean;
 };
 
@@ -33,18 +33,28 @@ export function isBaseOperator(operator: Operator): operator is BaseOperator {
   return ["lt", "lte", "gt", "gte", "eq", "neq"].includes(operator);
 }
 
-export function getValue(context: Context, key: `$$${string}`) {
-  if (!key.startsWith("$$")) {
-    throw new Error(`Invalid key: ${key}`);
+export function getValue(context: Context, key: `$$${string}` | `@${string}`) {
+  if (key.startsWith("$$")) {
+    return key
+      .slice(2)
+      .split(".")
+      .reduce(
+        (obj: any, k) => (obj == null ? undefined : obj[k]),
+        context["data"],
+      );
   }
 
-  return key
-    .slice(2) // removes the $$
-    .split(".")
-    .reduce(
-      (obj: any, k) => (obj == null ? undefined : obj[k]),
-      context["data"],
-    );
+  if (key.startsWith("@")) {
+    return key
+      .slice(1)
+      .split(".")
+      .reduce(
+        (obj: any, k) => (obj == null ? undefined : obj[k]),
+        context["currentItem"],
+      );
+  }
+
+  throw new Error(`Invalid key: ${key}`);
 }
 
 export function evaluateCondition(

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { startExperiment, traverse } from "../flow";
 import { ExperimentFlow } from "../types";
-import { makeScreen, seq } from "../test-helpers";
+import { makeScreen, seq } from "./test-helpers";
 
 // ---------------------------------------------------------------------------
 // Complex experiment — all node types combined
@@ -165,7 +165,7 @@ async function runComplexFlow(
   step = await traverse(step, { q2: "answer-2" }); // q2 → exit path → loop (color 0)
 
   expect(step.state.type).toBe("in-loop");
-  expect(step.context.data?.["__currentItem"]?.value).toBe("red");
+  expect(step.context.currentItem?.value).toBe("red");
 
   step = await traverse(step, { rating: 1 }); // red → blue
   step = await traverse(step, { rating: 2 }); // blue → green
@@ -187,7 +187,7 @@ describe("complex experiment (all node types)", async () => {
       "screen-ctrl-q1",
       "screen-ctrl-q2",
     ]);
-    expect(step.context.data?.["__currentItem"]).toBeUndefined();
+    expect(step.context.currentItem).toBeUndefined();
   });
 
   it("completes full flow: facebook → adult → treatment path → loop → debrief", async () => {
@@ -234,7 +234,7 @@ describe("complex experiment (all node types)", async () => {
     step = await traverse(step, { q2: "b" });
     const colors: string[] = [];
     while (step.state.type === "in-loop") {
-      colors.push(step.context.data?.["__currentItem"]?.value);
+      colors.push(step.context.currentItem?.value);
       step = await traverse(step, { rated: true });
     }
     expect(colors).toEqual(["red", "blue", "green"]);

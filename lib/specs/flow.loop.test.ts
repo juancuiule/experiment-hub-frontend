@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { startExperiment, traverse } from "../flow";
 import { ExperimentFlow } from "../types";
-import { makeScreen, seq } from "../test-helpers";
+import { makeScreen, seq } from "./test-helpers";
 
 // ---------------------------------------------------------------------------
 // Loop (static values)
@@ -26,42 +26,42 @@ describe("loop (static values)", async () => {
     ],
   };
 
-  it("starts on the template screen with __currentItem set for the first value", async () => {
+  it("starts on the template screen with currentItem set for the first value", async () => {
     const step = await startExperiment(flow, "start");
     expect(step.state.type).toBe("in-loop");
     expect((step.state as any).index).toBe(0);
-    expect(step.context.data?.["__currentItem"]).toEqual({
+    expect(step.context.currentItem).toEqual({
       value: "football",
       index: 0,
       loopId: "loop-sports",
     });
   });
 
-  it("advances __currentItem on each iteration", async () => {
+  it("advances currentItem on each iteration", async () => {
     let step = await startExperiment(flow, "start"); // index 0: football
     step = await traverse(step, { liked: true }); // advance to index 1: basketball
     expect((step.state as any).index).toBe(1);
-    expect(step.context.data?.["__currentItem"]).toEqual({
+    expect(step.context.currentItem).toEqual({
       value: "basketball",
       index: 1,
       loopId: "loop-sports",
     });
   });
 
-  it("exits the loop after the last iteration and strips __currentItem", async () => {
+  it("exits the loop after the last iteration and clears currentItem", async () => {
     let step = await startExperiment(flow, "start");
     step = await traverse(step, {}); // football → basketball
     step = await traverse(step, {}); // basketball → tennis
     step = await traverse(step, {}); // tennis → exit loop
     expect((step.state as any).node.id).toBe("screen-end");
-    expect(step.context.data?.["__currentItem"]).toBeUndefined();
+    expect(step.context.currentItem).toBeUndefined();
   });
 
   it("iterates through all values in order", async () => {
     let step = await startExperiment(flow, "start");
     const seen: string[] = [];
     for (let i = 0; i < 3; i++) {
-      seen.push(step.context.data?.["__currentItem"]?.value ?? "");
+      seen.push(step.context.currentItem?.value ?? "");
       step = await traverse(step, { liked: i % 2 === 0 });
     }
     expect(seen).toEqual(["football", "basketball", "tennis"]);
@@ -97,7 +97,7 @@ describe("loop (dynamic values from context)", async () => {
     let step = await startExperiment(flow, "start");
     step = await traverse(step, { sports: ["football", "tennis"] });
     expect(step.state.type).toBe("in-loop");
-    expect(step.context.data?.["__currentItem"]?.value).toBe("football");
+    expect(step.context.currentItem?.value).toBe("football");
   });
 
   it("iterates through all dynamic values in order", async () => {
@@ -105,29 +105,27 @@ describe("loop (dynamic values from context)", async () => {
     step = await traverse(step, { sports: ["alpha", "beta", "gamma"] });
     const seen: string[] = [];
     while (step.state.type === "in-loop") {
-      seen.push(step.context.data?.["__currentItem"]?.value);
+      seen.push(step.context.currentItem?.value);
       step = await traverse(step, { rated: true });
     }
     expect(seen).toEqual(["alpha", "beta", "gamma"]);
   });
 
-  it("strips __currentItem from context after the loop exits", async () => {
+  it("clears currentItem from context after the loop exits", async () => {
     let step = await startExperiment(flow, "start");
     step = await traverse(step, { sports: ["only-one"] });
     step = await traverse(step, { rated: true }); // exit loop
     expect((step.state as any).node.id).toBe("screen-end");
-    expect(step.context.data?.["__currentItem"]).toBeUndefined();
+    expect(step.context.currentItem).toBeUndefined();
   });
 
-  it("treats a missing context key as an empty array (loop body shows once with undefined value)", async () => {
-    // dataKey points to a field that was never set
+  it("skips the loop entirely when the dynamic values array is empty", async () => {
     let step = await startExperiment(flow, "start");
-    step = await traverse(step, {}); // setup with no sports field → getValue returns undefined → []
-    // With 0 values the loop still enters (index=0) and shows template once with undefined
-    expect(step.state.type).toBe("in-loop");
-    expect(step.context.data?.["__currentItem"]?.value).toBeUndefined();
-    step = await traverse(step, {}); // submit → exit
+    step = await traverse(step, {}); // setup with no sports field → empty array → loop skipped
+    expect(step.state.type).toBe("in-node");
     expect((step.state as any).node.id).toBe("screen-end");
+    expect(step.context.currentItem).toBeUndefined();
+    expect(step.context.loops?.["loop-dynamic"]?.order).toEqual([]);
   });
 });
 

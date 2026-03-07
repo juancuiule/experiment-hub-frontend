@@ -1,8 +1,9 @@
-import { ExperimentFlow } from "./types";
-
 // Simple experiment to test dynamic loops.
 // 1. Ask the user which sports they play (produces a string[]).
 // 2. Loop over each sport and ask how much joy it brings them and
+
+import { ExperimentFlow } from "@/lib/types";
+
 // how many times they played it on the last week.
 export const experimentLoop: ExperimentFlow = {
   nodes: [

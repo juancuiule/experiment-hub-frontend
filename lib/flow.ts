@@ -93,6 +93,13 @@ function initialState(
 async function enterStep(step: FlowStep): Promise<FlowStep> {
   if (step.state.type === "in-loop") {
     const { values, index, node } = step.state;
+
+    // Skip the loop entirely when there are no values to iterate
+    if (values.length === 0) {
+      const ctx = mergeContext(step.context, { loops: { [node.id]: { order: [] } } });
+      return exitToNextNode(step.experiment, ctx, node.id, step.dataPath ?? []);
+    }
+
     const contextWithItem = mergeContext(
       withCurrentItem(step.context, node.id, values, index),
       { loops: { [node.id]: { order: values } } },
@@ -264,7 +271,7 @@ function withCurrentItem(
   index: number,
 ): Context {
   return mergeContext(context, {
-    data: { __currentItem: { value: values[index], index, loopId } },
+    currentItem: { value: values[index], index, loopId },
   });
 }
 
@@ -511,9 +518,8 @@ export async function traverseInLoop(
       };
     }
 
-    // Strip __currentItem from data when exiting the loop
-    const { __currentItem, ...dataWithoutItem } = nContext.data ?? {};
-    const contextAfterLoop: Context = { ...nContext, data: dataWithoutItem };
+    // Clear currentItem when exiting the loop
+    const { currentItem: _, ...contextAfterLoop } = nContext;
     return exitToNextNode(experiment, contextAfterLoop, state.node.id, step.dataPath ?? []);
   }
 

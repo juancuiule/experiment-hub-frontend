@@ -1,4 +1,4 @@
-import { ExperimentFlow } from "./types";
+import { ExperimentFlow } from "@/lib/types";
 
 export const experiment: ExperimentFlow = {
   nodes: [
@@ -26,9 +26,21 @@ export const experiment: ExperimentFlow = {
       type: "path",
       props: { name: "Demographics", randomized: false },
     },
-    { id: "screen-demographics-age", type: "screen", props: { slug: "demographics-age" } },
-    { id: "screen-demographics-gender", type: "screen", props: { slug: "demographics-gender" } },
-    { id: "screen-demographics-country", type: "screen", props: { slug: "demographics-country" } },
+    {
+      id: "screen-demographics-age",
+      type: "screen",
+      props: { slug: "demographics-age" },
+    },
+    {
+      id: "screen-demographics-gender",
+      type: "screen",
+      props: { slug: "demographics-gender" },
+    },
+    {
+      id: "screen-demographics-country",
+      type: "screen",
+      props: { slug: "demographics-country" },
+    },
 
     // Age gate: minors exit early
     {
@@ -64,9 +76,21 @@ export const experiment: ExperimentFlow = {
       type: "path",
       props: { name: "Health Assessment", randomized: true },
     },
-    { id: "screen-physical-activity", type: "screen", props: { slug: "physical-activity" } },
-    { id: "screen-sleep-quality", type: "screen", props: { slug: "sleep-quality" } },
-    { id: "screen-stress-level", type: "screen", props: { slug: "stress-level" } },
+    {
+      id: "screen-physical-activity",
+      type: "screen",
+      props: { slug: "physical-activity" },
+    },
+    {
+      id: "screen-sleep-quality",
+      type: "screen",
+      props: { slug: "sleep-quality" },
+    },
+    {
+      id: "screen-stress-level",
+      type: "screen",
+      props: { slug: "stress-level" },
+    },
 
     // Risk branch based on stress score
     {
@@ -102,7 +126,10 @@ export const experiment: ExperimentFlow = {
     {
       id: "loop-goals",
       type: "loop",
-      props: { type: "static", values: ["nutrition", "fitness", "mindfulness"] },
+      props: {
+        type: "static",
+        values: ["nutrition", "fitness", "mindfulness"],
+      },
     },
     { id: "screen-goal-item", type: "screen", props: { slug: "goal-item" } },
 
@@ -124,29 +151,79 @@ export const experiment: ExperimentFlow = {
 
     // Consent → demographics path
     { type: "sequential", from: "screen-consent", to: "path-demographics" },
-    { type: "path-contains", from: "path-demographics", to: "screen-demographics-age", order: 0 },
-    { type: "path-contains", from: "path-demographics", to: "screen-demographics-gender", order: 1 },
-    { type: "path-contains", from: "path-demographics", to: "screen-demographics-country", order: 2 },
+    {
+      type: "path-contains",
+      from: "path-demographics",
+      to: "screen-demographics-age",
+      order: 0,
+    },
+    {
+      type: "path-contains",
+      from: "path-demographics",
+      to: "screen-demographics-gender",
+      order: 1,
+    },
+    {
+      type: "path-contains",
+      from: "path-demographics",
+      to: "screen-demographics-country",
+      order: 2,
+    },
 
     // Demographics → age gate branch
     { type: "sequential", from: "path-demographics", to: "branch-age-gate" },
-    { type: "branch-condition", from: "branch-age-gate.minor", to: "screen-minor-exit" },
+    {
+      type: "branch-condition",
+      from: "branch-age-gate.minor",
+      to: "screen-minor-exit",
+    },
     // minors end here (no sequential from screen-minor-exit)
-    { type: "branch-default", from: "branch-age-gate", to: "checkpoint-demographics" },
+    {
+      type: "branch-default",
+      from: "branch-age-gate",
+      to: "checkpoint-demographics",
+    },
 
     // Checkpoint → health path
     { type: "sequential", from: "checkpoint-demographics", to: "path-health" },
-    { type: "path-contains", from: "path-health", to: "screen-physical-activity", order: 0 },
-    { type: "path-contains", from: "path-health", to: "screen-sleep-quality", order: 1 },
-    { type: "path-contains", from: "path-health", to: "screen-stress-level", order: 2 },
+    {
+      type: "path-contains",
+      from: "path-health",
+      to: "screen-physical-activity",
+      order: 0,
+    },
+    {
+      type: "path-contains",
+      from: "path-health",
+      to: "screen-sleep-quality",
+      order: 1,
+    },
+    {
+      type: "path-contains",
+      from: "path-health",
+      to: "screen-stress-level",
+      order: 2,
+    },
 
     // Health → risk branch
     { type: "sequential", from: "path-health", to: "branch-risk" },
-    { type: "branch-condition", from: "branch-risk.high-stress", to: "screen-high-stress-resources" },
-    { type: "branch-default", from: "branch-risk", to: "screen-standard-resources" },
+    {
+      type: "branch-condition",
+      from: "branch-risk.high-stress",
+      to: "screen-high-stress-resources",
+    },
+    {
+      type: "branch-default",
+      from: "branch-risk",
+      to: "screen-standard-resources",
+    },
 
     // Both resource screens → goals loop
-    { type: "sequential", from: "screen-high-stress-resources", to: "loop-goals" },
+    {
+      type: "sequential",
+      from: "screen-high-stress-resources",
+      to: "loop-goals",
+    },
     { type: "sequential", from: "screen-standard-resources", to: "loop-goals" },
 
     // Goals loop

@@ -1,4 +1,4 @@
-import { ExperimentFlow } from "./types";
+import { ExperimentFlow } from "../types";
 
 export function makeScreen(
   id: string,

@@ -1,8 +1,10 @@
 "use client";
 
+import { getActiveState } from "@/lib/flow";
+import Button from "@/src/components/Button";
+import Stepper from "@/src/components/Stepper";
+import { useExperimentStore } from "@/src/data/store";
 import { useState } from "react";
-import { getActiveState } from "../lib/flow";
-import { useExperimentStore } from "../lib/store";
 
 export default function Home() {
   const { step, isLoading, start, next } = useExperimentStore();
@@ -36,32 +38,11 @@ export default function Home() {
     return (
       <Layout>
         {step.state.type === "in-path" && step.state.node.props.stepper && (
-          <div className="w-full mb-6">
-            <p className="text-sm text-zinc-400 mb-2">
-              {step.state.node.props.stepper.label
-                ?.replace("{index}", String(step.state.step + 1))
-                .replace("{total}", String(step.state.childrens.length))}
-            </p>
-            <div className="h-1 w-full bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-              {step.state.node.props.stepper.style === "dashed" ? (
-                <div className="h-full flex gap-0.5">
-                  {step.state.childrens.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`h-full flex-1 ${index < step.state.step + 1 ? "bg-black dark:bg-white" : "bg-zinc-300 dark:bg-zinc-600"}`}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div
-                  className="h-full bg-black dark:bg-white transition-all duration-300"
-                  style={{
-                    width: `${((step.state.step + 1) / step.state.childrens.length) * 100}%`,
-                  }}
-                />
-              )}
-            </div>
-          </div>
+          <Stepper
+            config={step.state.node.props.stepper}
+            step={step.state.step}
+            total={step.state.childrens.length}
+          />
         )}
         <Screen
           slug={activeState.node.props.slug}
@@ -139,36 +120,5 @@ function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
       <main className="w-full max-w-md px-8 py-16">{children}</main>
     </div>
-  );
-}
-
-function Button({
-  children,
-  onClick,
-  disabled,
-  type = "button",
-  variant = "primary",
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  disabled?: boolean;
-  type?: "button" | "submit";
-  variant?: "primary" | "secondary";
-}) {
-  const base =
-    "h-11 px-6 rounded-full font-medium transition-colors disabled:opacity-40";
-  const styles =
-    variant === "primary"
-      ? "bg-black text-white hover:bg-zinc-700 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-      : "border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800";
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      className={`${base} ${styles}`}
-    >
-      {children}
-    </button>
   );
 }

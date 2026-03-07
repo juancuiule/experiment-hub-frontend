@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { startExperiment, traverse, next } from "../flow";
 import { ExperimentFlow } from "../types";
-import { makeScreen, seq } from "../test-helpers";
+import { makeScreen, seq } from "./test-helpers";
 
 // ---------------------------------------------------------------------------
 // startExperiment

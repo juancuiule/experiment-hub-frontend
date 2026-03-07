@@ -25,8 +25,19 @@ describe("getValue", async () => {
     expect(getValue({}, "$$profile.age")).toBeUndefined();
   });
 
-  it("throws when the key does not start with $$", async () => {
+  it("throws when the key does not start with $$ or @", async () => {
     expect(() => getValue({}, "profile.age" as any)).toThrow("Invalid key");
+  });
+
+  it("resolves fields from currentItem using @ prefix", async () => {
+    const ctx = { currentItem: { value: "football", index: 0, loopId: "loop-sports" } };
+    expect(getValue(ctx, "@value")).toBe("football");
+    expect(getValue(ctx, "@index")).toBe(0);
+    expect(getValue(ctx, "@loopId")).toBe("loop-sports");
+  });
+
+  it("returns undefined when currentItem is absent and @ prefix is used", async () => {
+    expect(getValue({}, "@value")).toBeUndefined();
   });
 });
 
