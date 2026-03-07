@@ -2,11 +2,13 @@
 import { getValue } from "@/lib/conditions";
 import { FrameworkScreen } from "@/lib/screen";
 import { Context } from "@/lib/types";
+import { buildSchema, FieldErrors } from "@/lib/validation";
 import { useState } from "react";
 import Button from "./Button";
 import CheckboxGroup from "./CheckboxGroup";
 import Rating from "./Rating";
 import Input from "./Input";
+import RichText from "./RichText";
 
 type ScreenProps = {
   screen: FrameworkScreen;
@@ -15,8 +17,8 @@ type ScreenProps = {
   context: Context;
 };
 
-function resolveLabel(label: string, context: Context): string {
-  return label.replace(/(\$\$[\w.-]+|@[\w.]+)/g, (match) => {
+function resolveValuesInString(text: string, context: Context): string {
+  return text.replace(/(\$\$[\w.-]+|@[\w.]+)/g, (match) => {
     const key = match as `$$${string}` | `@${string}`;
     const resolved = getValue(context, key);
     return resolved != null ? String(resolved) : match;
@@ -24,7 +26,7 @@ function resolveLabel(label: string, context: Context): string {
 }
 
 export function Screen({ screen, isLoading, onNext, context }: ScreenProps) {
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<FieldErrors>({});
 
   return (
     <div>
@@ -33,7 +35,6 @@ export function Screen({ screen, isLoading, onNext, context }: ScreenProps) {
         onSubmit={(e) => {
           e.preventDefault();
           const target = e.currentTarget;
-          setError(null);
           const formData = new FormData(target);
           const data = screen.components
             .map((component) => {
@@ -53,11 +54,26 @@ export function Screen({ screen, isLoading, onNext, context }: ScreenProps) {
                   const value = formData.get(component.dataKey);
                   return { [component.dataKey]: value };
                 }
+                case "rich-text": {
+                  return {};
+                }
               }
             })
-            .reduce((acc, curr) => ({ ...acc, ...curr }), {});
+            .reduce<Record<string, any>>((acc, curr) => ({ ...acc, ...curr }), {});
 
-          onNext(data).then(() => {
+          const result = buildSchema(screen.components).safeParse(data);
+          if (!result.success) {
+            setErrors(
+              result.error.issues.reduce<FieldErrors>(
+                (acc, issue) => ({ ...acc, [String(issue.path[0])]: issue.message }),
+                {}
+              )
+            );
+            return;
+          }
+
+          setErrors({});
+          onNext(result.data).then(() => {
             if (target !== null) {
               target.reset();
             }
@@ -73,7 +89,7 @@ export function Screen({ screen, isLoading, onNext, context }: ScreenProps) {
                   label={
                     isLoading
                       ? "Loading..."
-                      : resolveLabel(component.label, context)
+                      : resolveValuesInString(component.label, context)
                   }
                 />
               );
@@ -83,7 +99,8 @@ export function Screen({ screen, isLoading, onNext, context }: ScreenProps) {
                 <CheckboxGroup
                   key={component.dataKey}
                   {...component}
-                  label={resolveLabel(component.label, context)}
+                  label={resolveValuesInString(component.label, context)}
+                  error={errors[component.dataKey]}
                 />
               );
             }
@@ -92,7 +109,8 @@ export function Screen({ screen, isLoading, onNext, context }: ScreenProps) {
                 <Rating
                   key={component.dataKey}
                   {...component}
-                  label={resolveLabel(component.label, context)}
+                  label={resolveValuesInString(component.label, context)}
+                  error={errors[component.dataKey]}
                 />
               );
             }
@@ -101,14 +119,27 @@ export function Screen({ screen, isLoading, onNext, context }: ScreenProps) {
                 <Input
                   key={component.dataKey}
                   {...component}
-                  label={resolveLabel(component.label, context)}
+                  label={resolveValuesInString(component.label, context)}
+                  error={errors[component.dataKey]}
+                />
+              );
+            }
+            case "rich-text": {
+              return (
+                <RichText
+                  key={i}
+                  content={resolveValuesInString(component.content, context)}
                 />
               );
             }
           }
           return null;
         })}
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+        {Object.keys(errors).length > 0 && (
+          <p className="text-red-500 text-sm mt-2">
+            Please fill in all required fields before continuing.
+          </p>
+        )}
       </form>
     </div>
   );

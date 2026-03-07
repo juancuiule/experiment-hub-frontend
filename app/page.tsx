@@ -43,7 +43,7 @@ export default function Home() {
 
   if (activeState.type === "in-node" && activeState.node.type === "screen") {
     const slug = activeState.node.props.slug;
-    const screen = step.experiment.screens.find((s) => s.slug === slug);
+    const screen = step.experiment.screens?.find((s) => s.slug === slug);
     return (
       <>
         {step.state.type === "in-path" && step.state.node.props.stepper && (

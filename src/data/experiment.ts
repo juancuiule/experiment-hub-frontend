@@ -26,10 +26,38 @@ export const experiment: ExperimentFlow = {
       type: "path",
       props: { name: "Profile", stepper: { style: "dashed" } },
     },
-    { id: "screen-demographics", type: "screen", props: { slug: "demographics" } },
+    {
+      id: "screen-demographics",
+      type: "screen",
+      props: { slug: "demographics" },
+    },
     { id: "screen-activities", type: "screen", props: { slug: "activities" } },
 
-    { id: "checkpoint-profile", type: "checkpoint", props: { name: "profile-complete" } },
+    {
+      id: "checkpoint-profile",
+      type: "checkpoint",
+      props: { name: "profile-complete" },
+    },
+
+    {
+      id: "branch-soccer",
+      type: "branch",
+      props: {
+        name: "Soccer fan",
+        branches: [
+          {
+            id: "fan",
+            name: "Plays soccer",
+            config: {
+              operator: "contains",
+              dataKey: "$$path-profile.activities.activities",
+              value: "soccer",
+            },
+          },
+        ],
+      },
+    },
+    { id: "screen-soccer-club", type: "screen", props: { slug: "soccer-club" } },
 
     {
       id: "branch-engagement",
@@ -49,8 +77,16 @@ export const experiment: ExperimentFlow = {
         ],
       },
     },
-    { id: "screen-high-engagement", type: "screen", props: { slug: "high-engagement" } },
-    { id: "screen-low-engagement", type: "screen", props: { slug: "low-engagement" } },
+    {
+      id: "screen-high-engagement",
+      type: "screen",
+      props: { slug: "high-engagement" },
+    },
+    {
+      id: "screen-low-engagement",
+      type: "screen",
+      props: { slug: "low-engagement" },
+    },
 
     {
       id: "loop-activities",
@@ -61,28 +97,69 @@ export const experiment: ExperimentFlow = {
         stepper: { label: "Activity {index} of {total}", style: "dashed" },
       },
     },
-    { id: "screen-activity-detail", type: "screen", props: { slug: "activity-detail" } },
+    {
+      id: "screen-activity-detail",
+      type: "screen",
+      props: { slug: "activity-detail" },
+    },
 
-    { id: "checkpoint-complete", type: "checkpoint", props: { name: "complete" } },
+    {
+      id: "checkpoint-complete",
+      type: "checkpoint",
+      props: { name: "complete" },
+    },
   ],
 
   edges: [
     { type: "sequential", from: "start", to: "screen-welcome" },
     { type: "sequential", from: "screen-welcome", to: "path-profile" },
 
-    { type: "path-contains", from: "path-profile", to: "screen-demographics", order: 0 },
-    { type: "path-contains", from: "path-profile", to: "screen-activities", order: 1 },
+    {
+      type: "path-contains",
+      from: "path-profile",
+      to: "screen-demographics",
+      order: 0,
+    },
+    {
+      type: "path-contains",
+      from: "path-profile",
+      to: "screen-activities",
+      order: 1,
+    },
 
     { type: "sequential", from: "path-profile", to: "checkpoint-profile" },
-    { type: "sequential", from: "checkpoint-profile", to: "branch-engagement" },
+    { type: "sequential", from: "checkpoint-profile", to: "branch-soccer" },
+    { type: "branch-condition", from: "branch-soccer.fan", to: "screen-soccer-club" },
+    { type: "branch-default", from: "branch-soccer", to: "branch-engagement" },
+    { type: "sequential", from: "screen-soccer-club", to: "branch-engagement" },
 
-    { type: "branch-condition", from: "branch-engagement.engaged", to: "screen-high-engagement" },
-    { type: "branch-default", from: "branch-engagement", to: "screen-low-engagement" },
+    {
+      type: "branch-condition",
+      from: "branch-engagement.engaged",
+      to: "screen-high-engagement",
+    },
+    {
+      type: "branch-default",
+      from: "branch-engagement",
+      to: "screen-low-engagement",
+    },
 
-    { type: "sequential", from: "screen-high-engagement", to: "loop-activities" },
-    { type: "sequential", from: "screen-low-engagement", to: "loop-activities" },
+    {
+      type: "sequential",
+      from: "screen-high-engagement",
+      to: "loop-activities",
+    },
+    {
+      type: "sequential",
+      from: "screen-low-engagement",
+      to: "loop-activities",
+    },
 
-    { type: "loop-template", from: "loop-activities", to: "screen-activity-detail" },
+    {
+      type: "loop-template",
+      from: "loop-activities",
+      to: "screen-activity-detail",
+    },
     { type: "sequential", from: "loop-activities", to: "checkpoint-complete" },
   ],
 
@@ -91,10 +168,16 @@ export const experiment: ExperimentFlow = {
       slug: "welcome",
       components: [
         {
+          type: "rich-text",
+          content:
+            "## Welcome!\nLet's start with a quick check-in about your daily habits and wellbeing.",
+        },
+        {
           type: "input",
           dataKey: "name",
           label: "What's your name?",
           placeholder: "Your name",
+          required: true,
         },
         { type: "button", label: "Begin" },
       ],
@@ -107,6 +190,7 @@ export const experiment: ExperimentFlow = {
           dataKey: "age",
           label: "How old are you?",
           placeholder: "e.g. 28",
+          required: true,
         },
         {
           type: "input",
@@ -124,8 +208,10 @@ export const experiment: ExperimentFlow = {
           type: "checkbox-group",
           dataKey: "activities",
           label: "Which activities are part of your daily routine?",
+          required: true,
           options: [
             { label: "Exercise", value: "exercise" },
+            { label: "Soccer", value: "soccer" },
             { label: "Cooking", value: "cooking" },
             { label: "Reading", value: "reading" },
             { label: "Meditation", value: "meditation" },
@@ -136,13 +222,32 @@ export const experiment: ExperimentFlow = {
       ],
     },
     {
+      slug: "soccer-club",
+      components: [
+        {
+          type: "rich-text",
+          content: "## You play soccer!\nWe'd love to know a bit more.",
+        },
+        {
+          type: "input",
+          dataKey: "club",
+          label: "Which club are you a fan of?",
+          placeholder: "e.g. River Plate",
+          required: true,
+        },
+        { type: "button", label: "Next" },
+      ],
+    },
+    {
       slug: "high-engagement",
       components: [
         {
           type: "rating",
           dataKey: "overall-satisfaction",
-          label: "Nice work, $$welcome.name! How satisfied are you with your current routine overall?",
+          label:
+            "Nice work, $$welcome.name! How satisfied are you with your current routine overall?",
           scale: 5,
+          required: true,
         },
         { type: "button", label: "Continue" },
       ],
@@ -163,16 +268,23 @@ export const experiment: ExperimentFlow = {
       slug: "activity-detail",
       components: [
         {
+          type: "rich-text",
+          content:
+            "## @value\nTell us a bit about how this activity fits into your life.",
+        },
+        {
           type: "rating",
           dataKey: "enjoyment",
           label: "How much do you enjoy @value?",
           scale: 5,
+          required: true,
         },
         {
           type: "rating",
           dataKey: "consistency",
           label: "How consistent are you with @value?",
           scale: 5,
+          required: true,
         },
         { type: "button", label: "Next" },
       ],

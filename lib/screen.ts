@@ -8,6 +8,7 @@ export type CheckboxGroup = {
   dataKey: string;
   label: string;
   options: { label: string; value: string }[];
+  required?: boolean;
 };
 
 export type Input = {
@@ -15,6 +16,7 @@ export type Input = {
   dataKey: string;
   label: string;
   placeholder?: string;
+  required?: boolean;
 };
 
 export type Rating = {
@@ -22,9 +24,15 @@ export type Rating = {
   dataKey: string;
   label: string;
   scale: number;
+  required?: boolean;
 };
 
-export type ScreenComponent = Input | CheckboxGroup | Button | Rating;
+export type RichText = {
+  type: "rich-text";
+  content: string;
+};
+
+export type ScreenComponent = Input | CheckboxGroup | Button | Rating | RichText;
 
 export type FrameworkScreen = {
   slug: string;

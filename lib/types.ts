@@ -5,7 +5,7 @@ import { FrameworkScreen } from "./screen";
 export type ExperimentFlow = {
   nodes: FrameworkNode[];
   edges: FrameworkEdge[];
-  screens: FrameworkScreen[];
+  screens?: FrameworkScreen[];
 };
 
 export type Context = Partial<{

@@ -2,10 +2,11 @@ type Props = {
   dataKey: string;
   label: string;
   scale: number;
+  error?: string;
 };
 
 export default function Rating(props: Props) {
-  const { dataKey, label, scale } = props;
+  const { dataKey, label, scale, error } = props;
 
   return (
     <div>
@@ -18,6 +19,7 @@ export default function Rating(props: Props) {
           </label>
         ))}
       </div>
+      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
     </div>
   );
 }
