@@ -17,6 +17,7 @@ export type Input = {
   label: string;
   placeholder?: string;
   required?: boolean;
+  inputType?: "text" | "number" | "email" | "date";
 };
 
 export type Rating = {

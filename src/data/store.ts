@@ -1,6 +1,7 @@
 import { startExperiment, traverse } from "@/lib/flow";
 import { FlowStep } from "@/lib/types";
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { experiment } from "./experiment";
 
 type ExperimentStore = {
@@ -10,29 +11,38 @@ type ExperimentStore = {
   next: (data?: Record<string, any>) => Promise<void>;
 };
 
-export const useExperimentStore = create<ExperimentStore>((set, get) => ({
-  step: null,
-  isLoading: false,
-  start: async (startNodeId?: string) => {
-    set({ isLoading: true });
-    try {
-      const step = await startExperiment(experiment, startNodeId);
-      set({ step, isLoading: false });
-    } catch (err) {
-      set({ isLoading: false });
-      throw err;
+export const useExperimentStore = create<ExperimentStore>()(
+  persist(
+    (set, get) => ({
+      step: null,
+      isLoading: false,
+      start: async (startNodeId?: string) => {
+        set({ isLoading: true });
+        try {
+          const step = await startExperiment(experiment, startNodeId);
+          set({ step, isLoading: false });
+        } catch (err) {
+          set({ isLoading: false });
+          throw err;
+        }
+      },
+      next: async (data?: Record<string, any>) => {
+        const { step } = get();
+        if (!step) return;
+        set({ isLoading: true });
+        try {
+          const nextStep = await traverse(step, data);
+          set({ step: nextStep, isLoading: false });
+        } catch (err) {
+          set({ isLoading: false });
+          throw err;
+        }
+      },
+    }),
+    {
+      name: "experiment",
+      storage: createJSONStorage(() => sessionStorage),
+      partialize: (state) => ({ step: state.step }),
     }
-  },
-  next: async (data?: Record<string, any>) => {
-    const { step } = get();
-    if (!step) return;
-    set({ isLoading: true });
-    try {
-      const nextStep = await traverse(step, data);
-      set({ step: nextStep, isLoading: false });
-    } catch (err) {
-      set({ isLoading: false });
-      throw err;
-    }
-  },
-}));
+  )
+);

@@ -191,6 +191,7 @@ export const experiment: ExperimentFlow = {
           label: "How old are you?",
           placeholder: "e.g. 28",
           required: true,
+          inputType: "number",
         },
         {
           type: "input",
