@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { startExperiment, traverse } from "../flow";
-import { ExperimentFlow } from "../types";
-import { makeScreen, seq } from "./test-helpers";
+import { startExperiment, traverse } from "@/lib/flow";
+
+import { makeScreen, seq } from "../test-helpers";
+import { ExperimentFlow } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
 // Path — basic
