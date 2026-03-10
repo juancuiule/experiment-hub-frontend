@@ -27,7 +27,10 @@ describe("basic checks", () => {
       nodes: [start, makeScreen("s1", "slug-a")],
       edges: [seq("start", "s1")],
       screens: [
-        { slug: "slug-a", components: [{ type: "button", label: "Go" }] },
+        {
+          slug: "slug-a",
+          components: [{ componentFamily: "layout", template: "button", props: { text: "Go" } }],
+        },
       ],
     };
     expect(validateExperiment(flow)).toEqual([]);
@@ -96,7 +99,7 @@ describe("@ reference checks", () => {
         {
           slug: "item",
           components: [
-            { type: "rating", dataKey: "r", label: "Rate @value", scale: 5 },
+            { componentFamily: "response", template: "rating", props: { dataKey: "r", label: "Rate @value", max: 5 } },
           ],
         },
       ],
@@ -111,7 +114,9 @@ describe("@ reference checks", () => {
       screens: [
         {
           slug: "welcome",
-          components: [{ type: "input", dataKey: "name", label: "Hi @value" }],
+          components: [
+            { componentFamily: "response", template: "text-input", props: { dataKey: "name", label: "Hi @value" } },
+          ],
         },
       ],
     };
@@ -126,7 +131,9 @@ describe("@ reference checks", () => {
       screens: [
         {
           slug: "intro",
-          components: [{ type: "rich-text", content: "## @value" }],
+          components: [
+            { componentFamily: "content", template: "rich-text", props: { content: "## @value" } },
+          ],
         },
       ],
     };
@@ -146,12 +153,14 @@ describe("$$ reference checks", () => {
       screens: [
         {
           slug: "welcome",
-          components: [{ type: "input", dataKey: "name", label: "Name" }],
+          components: [
+            { componentFamily: "response", template: "text-input", props: { dataKey: "name", label: "Name" } },
+          ],
         },
         {
           slug: "profile",
           components: [
-            { type: "input", dataKey: "note", label: "Hi $$welcome.name" },
+            { componentFamily: "response", template: "text-input", props: { dataKey: "note", label: "Hi $$welcome.name" } },
           ],
         },
       ],
@@ -167,7 +176,7 @@ describe("$$ reference checks", () => {
         {
           slug: "welcome",
           components: [
-            { type: "input", dataKey: "name", label: "Hi $$other.name" },
+            { componentFamily: "response", template: "text-input", props: { dataKey: "name", label: "Hi $$other.name" } },
           ],
         },
       ],
@@ -191,16 +200,14 @@ describe("$$ reference checks", () => {
       screens: [
         {
           slug: "demographics",
-          components: [{ type: "input", dataKey: "age", label: "Age" }],
+          components: [
+            { componentFamily: "response", template: "text-input", props: { dataKey: "age", label: "Age" } },
+          ],
         },
         {
           slug: "after",
           components: [
-            {
-              type: "input",
-              dataKey: "note",
-              label: "$$path-info.demographics.age",
-            },
+            { componentFamily: "response", template: "text-input", props: { dataKey: "note", label: "$$path-info.demographics.age" } },
           ],
         },
       ],
@@ -246,15 +253,23 @@ describe("$$ reference checks", () => {
       screens: [
         {
           slug: "before",
-          components: [{ type: "input", dataKey: "answer", label: "Answer" }],
+          components: [
+            { componentFamily: "response", template: "text-input", props: { dataKey: "answer", label: "Answer" } },
+          ],
         },
-        { slug: "branch-yes", components: [{ type: "button", label: "Ok" }] },
-        { slug: "branch-no", components: [{ type: "button", label: "Ok" }] },
+        {
+          slug: "branch-yes",
+          components: [{ componentFamily: "layout", template: "button", props: { text: "Ok" } }],
+        },
+        {
+          slug: "branch-no",
+          components: [{ componentFamily: "layout", template: "button", props: { text: "Ok" } }],
+        },
         {
           slug: "after",
           // References data written only in the "yes" branch — not guaranteed
           components: [
-            { type: "input", dataKey: "x", label: "$$branch-yes.something" },
+            { componentFamily: "response", template: "text-input", props: { dataKey: "x", label: "$$branch-yes.something" } },
           ],
         },
       ],
@@ -300,15 +315,23 @@ describe("$$ reference checks", () => {
       screens: [
         {
           slug: "before",
-          components: [{ type: "input", dataKey: "answer", label: "Answer" }],
+          components: [
+            { componentFamily: "response", template: "text-input", props: { dataKey: "answer", label: "Answer" } },
+          ],
         },
-        { slug: "branch-yes", components: [{ type: "button", label: "Ok" }] },
-        { slug: "branch-no", components: [{ type: "button", label: "Ok" }] },
+        {
+          slug: "branch-yes",
+          components: [{ componentFamily: "layout", template: "button", props: { text: "Ok" } }],
+        },
+        {
+          slug: "branch-no",
+          components: [{ componentFamily: "layout", template: "button", props: { text: "Ok" } }],
+        },
         {
           slug: "after",
           // References data written BEFORE the branch — always available
           components: [
-            { type: "input", dataKey: "x", label: "$$before.answer" },
+            { componentFamily: "response", template: "text-input", props: { dataKey: "x", label: "$$before.answer" } },
           ],
         },
       ],

@@ -19,7 +19,7 @@ export default function Home() {
             start();
           }}
         >
-          <Button label="Start" />
+          <Button text="Start" />
         </form>
       </>
     );

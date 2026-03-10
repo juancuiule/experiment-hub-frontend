@@ -31,20 +31,25 @@ function renderScreen(
 
 describe("rendering", () => {
   it("renders an input with its label", () => {
-    renderScreen([{ type: "input", dataKey: "name", label: "Your name" }]);
+    renderScreen([
+      { componentFamily: "response", template: "text-input", props: { dataKey: "name", label: "Your name" } },
+    ]);
     expect(screen.getByLabelText("Your name")).toBeInTheDocument();
   });
 
   it("renders a checkbox group with all options", () => {
     renderScreen([
       {
-        type: "checkbox-group",
-        dataKey: "hobbies",
-        label: "Hobbies",
-        options: [
-          { label: "Reading", value: "reading" },
-          { label: "Cooking", value: "cooking" },
-        ],
+        componentFamily: "response",
+        template: "multiple-check",
+        props: {
+          dataKey: "hobbies",
+          label: "Hobbies",
+          options: [
+            { label: "Reading", value: "reading" },
+            { label: "Cooking", value: "cooking" },
+          ],
+        },
       },
     ]);
     expect(screen.getByLabelText("Reading")).toBeInTheDocument();
@@ -52,17 +57,23 @@ describe("rendering", () => {
   });
 
   it("renders a rating with the correct number of options", () => {
-    renderScreen([{ type: "rating", dataKey: "score", label: "Score", scale: 5 }]);
+    renderScreen([
+      { componentFamily: "response", template: "rating", props: { dataKey: "score", label: "Score", max: 5 } },
+    ]);
     expect(screen.getAllByRole("radio")).toHaveLength(5);
   });
 
   it("renders rich-text markdown as HTML", () => {
-    renderScreen([{ type: "rich-text", content: "## Hello world" }]);
+    renderScreen([
+      { componentFamily: "content", template: "rich-text", props: { content: "## Hello world" } },
+    ]);
     expect(screen.getByRole("heading", { level: 2, name: "Hello world" })).toBeInTheDocument();
   });
 
   it("renders a button", () => {
-    renderScreen([{ type: "button", label: "Submit" }]);
+    renderScreen([
+      { componentFamily: "layout", template: "button", props: { text: "Submit" } },
+    ]);
     expect(screen.getByRole("button", { name: "Submit" })).toBeInTheDocument();
   });
 });
@@ -74,7 +85,7 @@ describe("rendering", () => {
 describe("label interpolation", () => {
   it("replaces @value in labels with currentItem.value from context", () => {
     renderScreen(
-      [{ type: "rating", dataKey: "enjoyment", label: "How much do you enjoy @value?", scale: 5 }],
+      [{ componentFamily: "response", template: "rating", props: { dataKey: "enjoyment", label: "How much do you enjoy @value?", max: 5 } }],
       { currentItem: { value: "soccer", index: 0, loopId: "loop-1" } }
     );
     expect(screen.getByText("How much do you enjoy soccer?")).toBeInTheDocument();
@@ -82,7 +93,7 @@ describe("label interpolation", () => {
 
   it("replaces $$ references in labels with context.data values", () => {
     renderScreen(
-      [{ type: "input", dataKey: "note", label: "Hi $$welcome.name!" }],
+      [{ componentFamily: "response", template: "text-input", props: { dataKey: "note", label: "Hi $$welcome.name!" } }],
       { data: { welcome: { name: "Juan" } } }
     );
     expect(screen.getByLabelText("Hi Juan!")).toBeInTheDocument();
@@ -90,7 +101,7 @@ describe("label interpolation", () => {
 
   it("replaces @value in rich-text content", () => {
     renderScreen(
-      [{ type: "rich-text", content: "## @value" }],
+      [{ componentFamily: "content", template: "rich-text", props: { content: "## @value" } }],
       { currentItem: { value: "cooking", index: 1, loopId: "loop-1" } }
     );
     expect(screen.getByRole("heading", { level: 2, name: "cooking" })).toBeInTheDocument();
@@ -106,8 +117,8 @@ describe("validation", () => {
     const onNext = vi.fn().mockResolvedValue(undefined);
     renderScreen(
       [
-        { type: "input", dataKey: "name", label: "Name", required: true },
-        { type: "button", label: "Submit" },
+        { componentFamily: "response", template: "text-input", props: { dataKey: "name", label: "Name", required: true } },
+        { componentFamily: "layout", template: "button", props: { text: "Submit" } },
       ],
       {},
       onNext
@@ -125,13 +136,16 @@ describe("validation", () => {
     renderScreen(
       [
         {
-          type: "checkbox-group",
-          dataKey: "activities",
-          label: "Activities",
-          required: true,
-          options: [{ label: "Exercise", value: "exercise" }],
+          componentFamily: "response",
+          template: "multiple-check",
+          props: {
+            dataKey: "activities",
+            label: "Activities",
+            required: true,
+            options: [{ label: "Exercise", value: "exercise" }],
+          },
         },
-        { type: "button", label: "Submit" },
+        { componentFamily: "layout", template: "button", props: { text: "Submit" } },
       ],
       {},
       onNext
@@ -147,8 +161,8 @@ describe("validation", () => {
     const onNext = vi.fn().mockResolvedValue(undefined);
     renderScreen(
       [
-        { type: "rating", dataKey: "score", label: "Score", scale: 5, required: true },
-        { type: "button", label: "Submit" },
+        { componentFamily: "response", template: "rating", props: { dataKey: "score", label: "Score", max: 5, required: true } },
+        { componentFamily: "layout", template: "button", props: { text: "Submit" } },
       ],
       {},
       onNext
@@ -164,8 +178,8 @@ describe("validation", () => {
     const onNext = vi.fn().mockResolvedValue(undefined);
     renderScreen(
       [
-        { type: "input", dataKey: "note", label: "Optional note" },
-        { type: "button", label: "Submit" },
+        { componentFamily: "response", template: "text-input", props: { dataKey: "note", label: "Optional note" } },
+        { componentFamily: "layout", template: "button", props: { text: "Submit" } },
       ],
       {},
       onNext
@@ -186,8 +200,8 @@ describe("data collection", () => {
     const onNext = vi.fn().mockResolvedValue(undefined);
     renderScreen(
       [
-        { type: "input", dataKey: "name", label: "Name", required: true },
-        { type: "button", label: "Submit" },
+        { componentFamily: "response", template: "text-input", props: { dataKey: "name", label: "Name", required: true } },
+        { componentFamily: "layout", template: "button", props: { text: "Submit" } },
       ],
       {},
       onNext
@@ -204,16 +218,19 @@ describe("data collection", () => {
     renderScreen(
       [
         {
-          type: "checkbox-group",
-          dataKey: "activities",
-          label: "Activities",
-          required: true,
-          options: [
-            { label: "Reading", value: "reading" },
-            { label: "Cooking", value: "cooking" },
-          ],
+          componentFamily: "response",
+          template: "multiple-check",
+          props: {
+            dataKey: "activities",
+            label: "Activities",
+            required: true,
+            options: [
+              { label: "Reading", value: "reading" },
+              { label: "Cooking", value: "cooking" },
+            ],
+          },
         },
-        { type: "button", label: "Submit" },
+        { componentFamily: "layout", template: "button", props: { text: "Submit" } },
       ],
       {},
       onNext
@@ -230,8 +247,8 @@ describe("data collection", () => {
     const onNext = vi.fn().mockResolvedValue(undefined);
     renderScreen(
       [
-        { type: "rating", dataKey: "score", label: "Score", scale: 5, required: true },
-        { type: "button", label: "Submit" },
+        { componentFamily: "response", template: "rating", props: { dataKey: "score", label: "Score", max: 5, required: true } },
+        { componentFamily: "layout", template: "button", props: { text: "Submit" } },
       ],
       {},
       onNext

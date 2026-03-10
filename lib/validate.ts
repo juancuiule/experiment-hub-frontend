@@ -1,10 +1,8 @@
+import { FrameworkEdge } from "./edges";
+import { FrameworkNode } from "./nodes";
 import { ExperimentFlow } from "./types";
 
 export type ValidationError = { code: string; message: string };
-
-// ---------------------------------------------------------------------------
-// Basic structural checks
-// ---------------------------------------------------------------------------
 
 function basicChecks(flow: ExperimentFlow): ValidationError[] {
   const errors: ValidationError[] = [];
@@ -16,17 +14,70 @@ function basicChecks(flow: ExperimentFlow): ValidationError[] {
     // "from" may be "nodeId.branchId" for branch-condition / fork-edge
     const fromNodeId = edge.from.split(".")[0];
     if (!nodeIds.has(fromNodeId)) {
-      errors.push({ code: "unknown-node", message: `Edge references unknown node "${fromNodeId}"` });
+      errors.push({
+        code: "unknown-node",
+        message: `Edge references unknown node "${fromNodeId}" as source`,
+      });
     }
     if (!nodeIds.has(edge.to)) {
-      errors.push({ code: "unknown-node", message: `Edge references unknown node "${edge.to}"` });
+      errors.push({
+        code: "unknown-node",
+        message: `Edge references unknown node "${edge.to}" as destination`,
+      });
+    }
+  }
+
+  // Every branch-condition edge must reference an existing branch.
+  for (const edge of flow.edges) {
+    if (edge.type === "branch-condition") {
+      const [fromNodeId, branchId] = edge.from.split(".");
+      const node = flow.nodes.find((n) => n.id === fromNodeId);
+      if (node?.type !== "branch") {
+        errors.push({
+          code: "invalid-edge",
+          message: `Branch condition edge "${edge.from}" does not reference a branch node`,
+        });
+      } else {
+        const branch = node.props.branches.find((b) => b.id === branchId);
+        if (!branch) {
+          errors.push({
+            code: "invalid-edge",
+            message: `Branch condition edge "${edge.from}" references non-existent branch "${branchId}"`,
+          });
+        }
+      }
+    }
+  }
+
+  // Every fork-edge must reference an existing fork.
+  for (const edge of flow.edges) {
+    if (edge.type === "fork-edge") {
+      const [fromNodeId, forkId] = edge.from.split(".");
+      const node = flow.nodes.find((n) => n.id === fromNodeId);
+      if (node?.type !== "fork") {
+        errors.push({
+          code: "invalid-edge",
+          message: `Fork edge "${edge.from}" does not reference a fork node`,
+        });
+      } else {
+        const fork = node.props.forks.find((b) => b.id === forkId);
+        if (!fork) {
+          errors.push({
+            code: "invalid-edge",
+            message: `Fork edge "${edge.from}" references non-existent fork "${forkId}"`,
+          });
+        }
+      }
     }
   }
 
   // Every screen node must have a matching screen definition.
   for (const node of flow.nodes) {
     if (node.type === "screen" && !screenSlugs.has(node.props.slug)) {
-      errors.push({ code: "missing-screen", message: `Screen node "${node.id}" references slug "${node.props.slug}" which has no screen definition` });
+      errors.push({
+        code: "missing-screen",
+        message: `Screen node "${node.id}" references slug "${node.props.slug}" which has no screen definition`,
+      });
     }
   }
 
@@ -34,18 +85,42 @@ function basicChecks(flow: ExperimentFlow): ValidationError[] {
   const seen = new Set<string>();
   for (const node of flow.nodes) {
     if (seen.has(node.id)) {
-      errors.push({ code: "duplicate-node-id", message: `Duplicate node id "${node.id}"` });
+      errors.push({
+        code: "duplicate-node-id",
+        message: `Duplicate node id "${node.id}"`,
+      });
     }
     seen.add(node.id);
   }
 
-  // Exactly one start node must exist.
+  // One start node must exist.
   const startNodes = flow.nodes.filter((n) => n.type === "start");
   if (startNodes.length === 0) {
     errors.push({ code: "missing-start", message: "Flow has no start node" });
-  } else if (startNodes.length > 1) {
-    errors.push({ code: "multiple-start", message: "Flow has more than one start node" });
   }
+
+  const requireEdge = {
+    start: "sequential",
+    checkpoint: "sequential",
+    path: "path-contains",
+    loop: "loop-template",
+    branch: "branch-condition", // or branch-default
+    fork: "fork-edge",
+  } as Record<FrameworkNode["type"], FrameworkEdge["type"]>;
+  flow.nodes.forEach((node) => {
+    const requiredEdgeType = requireEdge[node.type];
+    const hasRequiredEdge = flow.edges.some((edge) => {
+      return (
+        edge.type === requiredEdgeType && edge.from.split(".")[0] === node.id
+      );
+    });
+    if (!hasRequiredEdge) {
+      errors.push({
+        code: "missing-edge",
+        message: `Node "${node.id}" of type "${node.type}" has no outgoing edge of required type "${requiredEdgeType}"`,
+      });
+    }
+  });
 
   return errors;
 }
@@ -112,15 +187,26 @@ function buildEdgeMaps(flow: ExperimentFlow) {
     }
   }
 
-  return { seqNext, pathChildren, loopTemplateTarget, branchAllTargets, forkAllTargets };
+  return {
+    seqNext,
+    pathChildren,
+    loopTemplateTarget,
+    branchAllTargets,
+    forkAllTargets,
+  };
 }
 
 function validateReferences(flow: ExperimentFlow): ValidationError[] {
   const rawErrors: ValidationError[] = [];
   const nodeMap = new Map(flow.nodes.map((n) => [n.id, n]));
   const screenMap = new Map((flow.screens ?? []).map((s) => [s.slug, s]));
-  const { seqNext, pathChildren, loopTemplateTarget, branchAllTargets, forkAllTargets } =
-    buildEdgeMaps(flow);
+  const {
+    seqNext,
+    pathChildren,
+    loopTemplateTarget,
+    branchAllTargets,
+    forkAllTargets,
+  } = buildEdgeMaps(flow);
 
   function extractTokens(text: string): string[] {
     return [...text.matchAll(/(\$\$[\w.-]+|@[\w.]+)/g)].map((m) => m[0]);
@@ -128,14 +214,20 @@ function validateReferences(flow: ExperimentFlow): ValidationError[] {
 
   // available: set of dot-joined data paths known to exist at this point,
   //            e.g. "welcome.name", "path-profile.demographics.age"
-  function checkScreenRefs(slug: string, available: Set<string>, insideLoop: boolean) {
+  function checkScreenRefs(
+    slug: string,
+    available: Set<string>,
+    insideLoop: boolean,
+  ) {
     const screen = screenMap.get(slug);
     if (!screen) return;
 
     for (const component of screen.components) {
       const texts: string[] = [];
-      if ("label" in component) texts.push(component.label as string);
-      if ("content" in component) texts.push(component.content as string);
+      const props = component.props as Record<string, unknown>;
+      if (typeof props.label === "string") texts.push(props.label);
+      if (typeof props.content === "string") texts.push(props.content);
+      if (typeof props.text === "string") texts.push(props.text);
 
       for (const text of texts) {
         for (const token of extractTokens(text)) {
@@ -150,7 +242,7 @@ function validateReferences(flow: ExperimentFlow): ValidationError[] {
             // Strip $$ and check whether any available path is a prefix
             const path = token.slice(2);
             const isAvailable = [...available].some(
-              (a) => path === a || path.startsWith(a + ".")
+              (a) => path === a || path.startsWith(a + "."),
             );
             if (!isAvailable) {
               rawErrors.push({
@@ -168,7 +260,7 @@ function validateReferences(flow: ExperimentFlow): ValidationError[] {
     nodeId: string,
     available: Set<string>,
     dataPath: string[],
-    insideLoop: boolean
+    insideLoop: boolean,
   ): Set<string> {
     const node = nodeMap.get(nodeId);
     if (!node) return available;
@@ -192,7 +284,9 @@ function validateReferences(flow: ExperimentFlow): ValidationError[] {
         const screen = screenMap.get(slug);
         if (screen) {
           for (const component of screen.components) {
-            if ("dataKey" in component) current.add(`${prefix}.${(component as any).dataKey}`);
+            if (component.componentFamily === "response") {
+              current.add(`${prefix}.${component.props.dataKey}`);
+            }
           }
         }
 
@@ -203,10 +297,17 @@ function validateReferences(flow: ExperimentFlow): ValidationError[] {
 
       case "path": {
         // Walk children in order, each one seeing the previous child's data.
-        const children = (pathChildren.get(nodeId) ?? []).sort((a, b) => a.order - b.order);
+        const children = (pathChildren.get(nodeId) ?? []).sort(
+          (a, b) => a.order - b.order,
+        );
         let childAvailable = new Set(current);
         for (const { to } of children) {
-          childAvailable = walk(to, childAvailable, [...dataPath, nodeId], insideLoop);
+          childAvailable = walk(
+            to,
+            childAvailable,
+            [...dataPath, nodeId],
+            insideLoop,
+          );
         }
         // Merge all path data back so the next node can reference it.
         childAvailable.forEach((k) => current.add(k));
