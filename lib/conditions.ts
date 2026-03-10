@@ -8,7 +8,7 @@ export type ArrayOperator = "contains" | `length-${BaseOperator}`;
 export type Operator = BaseOperator | ArrayOperator;
 export type ConditionConfig = {
   operator: Operator;
-  dataKey: `$$${string}` | `@${string}`;
+  dataKey: `$$${string}` | `@${string}` | `$${string}`;
   value: string | number | boolean;
 };
 
@@ -33,7 +33,7 @@ export function isBaseOperator(operator: Operator): operator is BaseOperator {
   return ["lt", "lte", "gt", "gte", "eq", "neq"].includes(operator);
 }
 
-export function getValue(context: Context, key: `$$${string}` | `@${string}`) {
+export function getValue(context: Context, key: `$$${string}` | `@${string}` | `$${string}`) {
   if (key.startsWith("$$")) {
     return key
       .slice(2)
@@ -51,6 +51,16 @@ export function getValue(context: Context, key: `$$${string}` | `@${string}`) {
       .reduce(
         (obj: any, k) => (obj == null ? undefined : obj[k]),
         context["currentItem"],
+      );
+  }
+
+  if (key.startsWith("$")) {
+    return key
+      .slice(1)
+      .split(".")
+      .reduce(
+        (obj: any, k) => (obj == null ? undefined : obj[k]),
+        context["screenData"],
       );
   }
 

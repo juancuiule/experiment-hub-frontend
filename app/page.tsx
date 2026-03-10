@@ -40,5 +40,7 @@ export default async function Home(props: Props) {
   const searchParams = await props.searchParams;
   const startingNode = determineStartingNode(searchParams, experiment);
 
+  console.log(startingNode)
+
   return <Experiment startingNode={startingNode} />;
 }

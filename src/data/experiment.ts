@@ -24,7 +24,7 @@ export const experiment: ExperimentFlow = {
     {
       id: "path-profile",
       type: "path",
-      props: { name: "Profile", stepper: { style: "dashed" } },
+      props: { name: "Profile", stepper: { style: "dashed", label: `{index} - {total}` } },
     },
     {
       id: "screen-demographics",

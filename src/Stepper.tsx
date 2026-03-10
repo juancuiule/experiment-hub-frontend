@@ -23,7 +23,7 @@ export default function Stepper(props: Props) {
             {Array.from({ length: total }, (_, index) => (
               <div
                 key={index}
-                className={`h-full flex-1 ${index < step + 1 ? "bg-black dark:bg-white" : "bg-zinc-300 dark:bg-zinc-600"}`}
+                className={`h-full flex-1 ${index < step + 1 ? "bg-black" : "bg-zinc-300"}`}
               />
             ))}
           </div>

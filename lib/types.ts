@@ -12,6 +12,7 @@ export type Context = Partial<{
   start: { group: string };
   checkpoints: { [checkpointName: string]: string };
   data: Record<string, any>;
+  screenData: Record<string, any>;
   currentItem: { value: any; index: number; loopId: string };
   branches: Record<string, string>;
   forks: Record<string, string>;

@@ -77,7 +77,7 @@ export default function Experiment(props: Props) {
         )}
         <div className="h-2 w-full bg-gray-100 my-6"></div>
         <pre className="font-mono text-xs">
-          <code>{JSON.stringify(step.context, null, 2)}</code>
+          <code>{JSON.stringify(step, null, 2)}</code>
         </pre>
       </>
     );
