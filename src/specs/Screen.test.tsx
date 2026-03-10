@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { Screen } from "../../Screen";
+import { Screen } from "../Screen";
 import { FrameworkScreen } from "@/lib/screen";
 
 const noop = vi.fn().mockResolvedValue(undefined);
@@ -41,7 +41,7 @@ describe("rendering", () => {
     renderScreen([
       {
         componentFamily: "response",
-        template: "multiple-check",
+        template: "checkboxes",
         props: {
           dataKey: "hobbies",
           label: "Hobbies",
@@ -137,7 +137,7 @@ describe("validation", () => {
       [
         {
           componentFamily: "response",
-          template: "multiple-check",
+          template: "checkboxes",
           props: {
             dataKey: "activities",
             label: "Activities",
@@ -219,7 +219,7 @@ describe("data collection", () => {
       [
         {
           componentFamily: "response",
-          template: "multiple-check",
+          template: "checkboxes",
           props: {
             dataKey: "activities",
             label: "Activities",

@@ -3,7 +3,7 @@ import { ScreenComponent } from "@/lib/components";
 import { FrameworkScreen } from "@/lib/screen";
 import { Context } from "@/lib/types";
 import { resolveValuesInString } from "@/lib/resolve";
-import { buildSchema, FieldErrors } from "@/lib/validation";
+import { buildSchema } from "@/lib/validation";
 import { useState } from "react";
 import Button from "./components/Button";
 import CheckboxGroup from "./components/CheckboxGroup";
@@ -14,6 +14,8 @@ import Rating from "./components/Rating";
 import RichText from "./components/RichText";
 import SingleCheckbox from "./components/SingleCheckbox";
 import Slider from "./components/Slider";
+
+type FieldErrors = Record<string, string>;
 
 type ScreenProps = {
   screen: FrameworkScreen;
@@ -192,7 +194,7 @@ export function Screen({ screen, isLoading, onNext, context }: ScreenProps) {
               Record<string, any>
             >((acc, curr) => ({ ...acc, ...curr }), {});
 
-          const result = buildSchema(screen.components).safeParse(data);
+          const result = buildSchema(screen).safeParse(data);
           if (!result.success) {
             setErrors(
               result.error.issues.reduce<FieldErrors>(
@@ -208,7 +210,7 @@ export function Screen({ screen, isLoading, onNext, context }: ScreenProps) {
 
           setErrors({});
           // TODO: surface error to user (toast / inline message)
-          onNext(result.data)
+          onNext(data)
             // .then(() => {
             //   target?.reset();
             // })

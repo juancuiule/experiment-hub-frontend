@@ -218,7 +218,7 @@ export const experiment: ExperimentFlow = {
       components: [
         {
           componentFamily: "response",
-          template: "multiple-check",
+          template: "checkboxes",
           props: {
             dataKey: "activities",
             label: "Which activities are part of your daily routine?",
