@@ -2,9 +2,18 @@ import { BaseComponent } from ".";
 
 type ResponseComponentBaseProps = {
   dataKey: string;
-  embedd?: boolean;
   required?: boolean;
   errorMessage?: string;
+};
+
+type ValidationRule<T = never> = [T] extends [never]
+  ? { errorMessage?: string }
+  : { value: T; errorMessage?: string };
+
+type TextValidation = {
+  minLength?: ValidationRule<number>;
+  maxLength?: ValidationRule<number>;
+  pattern?: ValidationRule<string>;
 };
 
 export interface BaseResponseComponent<
@@ -24,6 +33,10 @@ export interface SliderComponent extends BaseResponseComponent<
     defaultValue?: number;
     minLabel?: string;
     maxLabel?: string;
+    showValue?: boolean;
+    requiresInteraction?: ValidationRule;
+    minValue?: ValidationRule<number>;
+    maxValue?: ValidationRule<number>;
   }
 > {}
 
@@ -41,17 +54,30 @@ export interface TextInputComponent extends BaseResponseComponent<
   {
     label: string;
     placeholder?: string;
+  } & TextValidation
+> {}
+
+export interface TextAreaComponent extends BaseResponseComponent<
+  "text-area",
+  {
+    label: string;
+    placeholder?: string;
+    lines?: number;
+  } & TextValidation
+> {}
+
+export interface DateInputComponent extends BaseResponseComponent<
+  "date-input",
+  {
+    label: string;
   }
 > {}
 
-// TODO: add date and time input
-export interface DateInputComponent extends BaseResponseComponent<
-  "date-input",
-  {}
-> {}
 export interface TimeInputComponent extends BaseResponseComponent<
   "time-input",
-  {}
+  {
+    label: string;
+  }
 > {}
 
 export type Option = {
@@ -64,6 +90,7 @@ export interface DropdownComponent extends BaseResponseComponent<
   {
     label: string;
     options: Option[];
+    randomize?: boolean;
   }
 > {}
 
@@ -72,6 +99,7 @@ export interface RadioComponent extends BaseResponseComponent<
   {
     label: string;
     options: Option[];
+    randomize?: boolean;
   }
 > {}
 
@@ -82,15 +110,29 @@ export interface CheckboxesComponent extends BaseResponseComponent<
     options: Option[];
     min?: number;
     max?: number;
+    randomize?: boolean;
   }
 > {}
 
-export interface RatingComponent extends BaseResponseComponent<
-  "rating",
+export interface NumericInputComponent extends BaseResponseComponent<
+  "numeric-input",
   {
     label: string;
-    max: number;
-    optionsLabel?: Option[];
+    placeholder?: string;
+    min?: number;
+    max?: number;
+    step?: number;
+    defaultValue?: number;
+  }
+> {}
+
+export type LikertOption = Option;
+
+export interface LikertScaleComponent extends BaseResponseComponent<
+  "likert-scale",
+  {
+    label: string;
+    options: LikertOption[];
   }
 > {}
 
@@ -98,9 +140,11 @@ export type ResponseComponent =
   | SliderComponent
   | SingleCheckboxComponent
   | TextInputComponent
+  | TextAreaComponent
   | DateInputComponent
   | TimeInputComponent
   | DropdownComponent
   | RadioComponent
   | CheckboxesComponent
-  | RatingComponent;
+  | NumericInputComponent
+  | LikertScaleComponent;

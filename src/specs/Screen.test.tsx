@@ -56,9 +56,23 @@ describe("rendering", () => {
     expect(screen.getByLabelText("Cooking")).toBeInTheDocument();
   });
 
-  it("renders a rating with the correct number of options", () => {
+  it("renders a likert-scale with the correct number of options", () => {
     renderScreen([
-      { componentFamily: "response", template: "rating", props: { dataKey: "score", label: "Score", max: 5 } },
+      {
+        componentFamily: "response",
+        template: "likert-scale",
+        props: {
+          dataKey: "score",
+          label: "Score",
+          options: [
+            { label: "Strongly disagree", value: "1" },
+            { label: "Disagree", value: "2" },
+            { label: "Neutral", value: "3" },
+            { label: "Agree", value: "4" },
+            { label: "Strongly agree", value: "5" },
+          ],
+        },
+      },
     ]);
     expect(screen.getAllByRole("radio")).toHaveLength(5);
   });
@@ -85,7 +99,17 @@ describe("rendering", () => {
 describe("label interpolation", () => {
   it("replaces @value in labels with currentItem.value from context", () => {
     renderScreen(
-      [{ componentFamily: "response", template: "rating", props: { dataKey: "enjoyment", label: "How much do you enjoy @value?", max: 5 } }],
+      [
+        {
+          componentFamily: "response",
+          template: "likert-scale",
+          props: {
+            dataKey: "enjoyment",
+            label: "How much do you enjoy @value?",
+            options: [{ label: "A lot", value: "1" }, { label: "A little", value: "2" }],
+          },
+        },
+      ],
       { currentItem: { value: "soccer", index: 0, loopId: "loop-1" } }
     );
     expect(screen.getByText("How much do you enjoy soccer?")).toBeInTheDocument();
@@ -157,11 +181,20 @@ describe("validation", () => {
     expect(screen.getByText("Please select at least one option")).toBeInTheDocument();
   });
 
-  it("blocks submit and shows error when a required rating is not selected", async () => {
+  it("blocks submit and shows error when a required likert-scale is not selected", async () => {
     const onNext = vi.fn().mockResolvedValue(undefined);
     renderScreen(
       [
-        { componentFamily: "response", template: "rating", props: { dataKey: "score", label: "Score", max: 5, required: true } },
+        {
+          componentFamily: "response",
+          template: "likert-scale",
+          props: {
+            dataKey: "score",
+            label: "Score",
+            options: [{ label: "Agree", value: "1" }, { label: "Disagree", value: "2" }],
+            required: true,
+          },
+        },
         { componentFamily: "layout", template: "button", props: { text: "Submit" } },
       ],
       {},
@@ -171,7 +204,7 @@ describe("validation", () => {
     await userEvent.click(screen.getByRole("button", { name: "Submit" }));
 
     expect(onNext).not.toHaveBeenCalled();
-    expect(screen.getByText("Please select a rating")).toBeInTheDocument();
+    expect(screen.getByText("This field is required")).toBeInTheDocument();
   });
 
   it("does not block submit for optional fields left empty", async () => {
@@ -243,11 +276,26 @@ describe("data collection", () => {
     expect(onNext).toHaveBeenCalledWith({ activities: ["reading", "cooking"] });
   });
 
-  it("calls onNext with selected rating value", async () => {
+  it("calls onNext with selected likert-scale value", async () => {
     const onNext = vi.fn().mockResolvedValue(undefined);
     renderScreen(
       [
-        { componentFamily: "response", template: "rating", props: { dataKey: "score", label: "Score", max: 5, required: true } },
+        {
+          componentFamily: "response",
+          template: "likert-scale",
+          props: {
+            dataKey: "score",
+            label: "Score",
+            options: [
+              { label: "Strongly disagree", value: "1" },
+              { label: "Disagree", value: "2" },
+              { label: "Neutral", value: "3" },
+              { label: "Agree", value: "4" },
+              { label: "Strongly agree", value: "5" },
+            ],
+            required: true,
+          },
+        },
         { componentFamily: "layout", template: "button", props: { text: "Submit" } },
       ],
       {},

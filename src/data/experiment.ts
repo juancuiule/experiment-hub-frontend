@@ -262,12 +262,18 @@ export const experiment: ExperimentFlow = {
       components: [
         {
           componentFamily: "response",
-          template: "rating",
+          template: "likert-scale",
           props: {
             dataKey: "overall-satisfaction",
             label:
               "Nice work, $$welcome.name! How satisfied are you with your current routine overall?",
-            max: 5,
+            options: [
+              { label: "Very dissatisfied", value: "1" },
+              { label: "Dissatisfied", value: "2" },
+              { label: "Neutral", value: "3" },
+              { label: "Satisfied", value: "4" },
+              { label: "Very satisfied", value: "5" },
+            ],
             required: true,
           },
         },
@@ -302,21 +308,33 @@ export const experiment: ExperimentFlow = {
         },
         {
           componentFamily: "response",
-          template: "rating",
+          template: "likert-scale",
           props: {
             dataKey: "enjoyment",
             label: "How much do you enjoy @value?",
-            max: 5,
+            options: [
+              { label: "Not at all", value: "1" },
+              { label: "Slightly", value: "2" },
+              { label: "Moderately", value: "3" },
+              { label: "Very much", value: "4" },
+              { label: "Extremely", value: "5" },
+            ],
             required: true,
           },
         },
         {
           componentFamily: "response",
-          template: "rating",
+          template: "likert-scale",
           props: {
             dataKey: "consistency",
             label: "How consistent are you with @value?",
-            max: 5,
+            options: [
+              { label: "Never", value: "1" },
+              { label: "Rarely", value: "2" },
+              { label: "Sometimes", value: "3" },
+              { label: "Often", value: "4" },
+              { label: "Always", value: "5" },
+            ],
             required: true,
           },
         },

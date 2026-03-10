@@ -8,6 +8,16 @@ function buildFieldSchema(component: ResponseComponent): z.ZodTypeAny {
 
   switch (component.template) {
     case "text-input":
+    case "text-area": {
+      const { minLength, maxLength, pattern } = component.props;
+      let base = z.string();
+      if (required) base = base.min(1, msg);
+      if (minLength) base = base.min(minLength.value, minLength.errorMessage ?? `Must be at least ${minLength.value} characters`);
+      if (maxLength) base = base.max(maxLength.value, maxLength.errorMessage ?? `Must be at most ${maxLength.value} characters`);
+      if (pattern) base = base.regex(new RegExp(pattern.value), pattern.errorMessage ?? "Invalid format");
+      return required ? base : base.optional();
+    }
+
     case "date-input":
     case "time-input": {
       const base = z.string();
@@ -32,15 +42,30 @@ function buildFieldSchema(component: ResponseComponent): z.ZodTypeAny {
       return base;
     }
 
-    case "rating": {
-      const base = z.coerce.number().int().min(1, errorMessage ?? "Please select a rating").max(component.props.max);
+    case "likert-scale": {
+      const base = z.string();
+      return required ? base.min(1, msg) : base.optional();
+    }
+
+    case "numeric-input": {
+      const { min, max } = component.props;
+      let base = z.coerce.number();
+      if (min !== undefined) base = base.min(min, errorMessage ?? `Must be at least ${min}`);
+      if (max !== undefined) base = base.max(max, errorMessage ?? `Must be at most ${max}`);
       return required ? base : base.optional();
     }
 
     case "slider": {
-      const { min = 0, max = 100 } = component.props;
-      // Slider always has a value (range input) — only coerce to number
-      return z.coerce.number().min(min).max(max);
+      const { min = 0, max = 100, requiresInteraction, minValue, maxValue } = component.props;
+      let base = z.coerce.number().min(min).max(max);
+      if (minValue) base = base.min(minValue.value, minValue.errorMessage ?? `Must be at least ${minValue.value}`);
+      if (maxValue) base = base.max(maxValue.value, maxValue.errorMessage ?? `Must be at most ${maxValue.value}`);
+      if (requiresInteraction) {
+        return z.coerce.number().refine((v) => v !== undefined, {
+          message: requiresInteraction.errorMessage ?? "Please interact with the slider",
+        });
+      }
+      return base;
     }
 
     case "single-checkbox": {

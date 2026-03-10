@@ -22,12 +22,23 @@ export interface ImageComponent extends BaseContentComponent<
 
 export interface VideoComponent extends BaseContentComponent<
   "video",
-  { url: string; autoplay: boolean; muted: boolean }
+  {
+    url: string;
+    autoplay?: boolean;
+    muted?: boolean;
+    loop?: boolean;
+    controls?: boolean;
+  }
 > {}
 
 export interface AudioComponent extends BaseContentComponent<
   "audio",
-  { url: string }
+  {
+    url: string;
+    autoplay?: boolean;
+    loop?: boolean;
+    controls?: boolean;
+  }
 > {}
 
 export type ContentComponent =

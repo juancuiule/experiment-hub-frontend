@@ -164,44 +164,43 @@ describe("checkboxes", () => {
 });
 
 // ---------------------------------------------------------------------------
-// rating
+// likert-scale
 // ---------------------------------------------------------------------------
 
-describe("rating", () => {
-  it("passes a value within range", () => {
+const likertOptions = [
+  { label: "Strongly disagree", value: "1" },
+  { label: "Disagree", value: "2" },
+  { label: "Neutral", value: "3" },
+  { label: "Agree", value: "4" },
+  { label: "Strongly agree", value: "5" },
+];
+
+describe("likert-scale", () => {
+  it("passes when an option is selected and required", () => {
     const schema = buildSchema(
       screen([
-        { componentFamily: "response", template: "rating", props: { dataKey: "score", label: "Rate", max: 5, required: true } },
+        { componentFamily: "response", template: "likert-scale", props: { dataKey: "score", label: "Rate", options: likertOptions, required: true } },
       ])
     );
-    expect(schema.safeParse({ score: 3 }).success).toBe(true);
+    expect(schema.safeParse({ score: "3" }).success).toBe(true);
   });
 
-  it("fails zero (below min of 1)", () => {
+  it("fails when empty and required", () => {
     const schema = buildSchema(
       screen([
-        { componentFamily: "response", template: "rating", props: { dataKey: "score", label: "Rate", max: 5, required: true } },
+        { componentFamily: "response", template: "likert-scale", props: { dataKey: "score", label: "Rate", options: likertOptions, required: true } },
       ])
     );
-    expect(schema.safeParse({ score: 0 }).success).toBe(false);
+    expect(schema.safeParse({ score: "" }).success).toBe(false);
   });
 
-  it("fails above max", () => {
+  it("passes when empty and not required", () => {
     const schema = buildSchema(
       screen([
-        { componentFamily: "response", template: "rating", props: { dataKey: "score", label: "Rate", max: 5, required: true } },
+        { componentFamily: "response", template: "likert-scale", props: { dataKey: "score", label: "Rate", options: likertOptions } },
       ])
     );
-    expect(schema.safeParse({ score: 6 }).success).toBe(false);
-  });
-
-  it("coerces string to number", () => {
-    const schema = buildSchema(
-      screen([
-        { componentFamily: "response", template: "rating", props: { dataKey: "score", label: "Rate", max: 5, required: true } },
-      ])
-    );
-    expect(schema.safeParse({ score: "4" }).success).toBe(true);
+    expect(schema.safeParse({}).success).toBe(true);
   });
 });
 
@@ -306,7 +305,7 @@ describe("multi-field screen", () => {
     const schema = buildSchema(
       screen([
         { componentFamily: "response", template: "text-input", props: { dataKey: "name", label: "Name", required: true } },
-        { componentFamily: "response", template: "rating", props: { dataKey: "score", label: "Rate", max: 5, required: true } },
+        { componentFamily: "response", template: "likert-scale", props: { dataKey: "score", label: "Rate", options: likertOptions, required: true } },
         { componentFamily: "layout", template: "button", props: { text: "Next" } },
       ])
     );

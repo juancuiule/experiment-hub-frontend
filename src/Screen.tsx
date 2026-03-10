@@ -105,13 +105,13 @@ function renderComponent(
               error={error}
             />
           );
-        case "rating":
+        case "likert-scale":
           return (
             <Rating
               key={dataKey}
               dataKey={dataKey}
               label={resolveValuesInString(component.props.label, context)}
-              max={component.props.max}
+              options={component.props.options}
               error={error}
             />
           );

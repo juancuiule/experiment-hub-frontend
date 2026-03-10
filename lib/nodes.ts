@@ -43,7 +43,7 @@ export interface BranchNode extends BaseNode {
   };
 }
 
-export type StepperConfig = { label?: string; style?: "continuous" | "dashed" };
+export type StepperConfig = { label?: string; style: "continuous" | "dashed" };
 
 export interface PathNode extends BaseNode {
   type: "path";
@@ -65,6 +65,8 @@ export type Fork = {
 export interface ForkNode extends BaseNode {
   type: "fork";
   props: {
+    name: string;
+    description?: string;
     forks: Fork[];
   };
 }

@@ -546,8 +546,16 @@ describe("@ reference checks", () => {
           components: [
             {
               componentFamily: "response",
-              template: "rating",
-              props: { dataKey: "score", label: "Rate @value", max: 5 },
+              template: "likert-scale",
+              props: {
+                dataKey: "score",
+                label: "Rate @value",
+                options: [
+                  { label: "Low", value: "1" },
+                  { label: "Medium", value: "2" },
+                  { label: "High", value: "3" },
+                ],
+              },
             },
           ],
         },
