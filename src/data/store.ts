@@ -20,10 +20,11 @@ export const useExperimentStore = create<ExperimentStore>()(
         set({ isLoading: true });
         try {
           const step = await startExperiment(experiment, startNodeId);
-          set({ step, isLoading: false });
+          set({ step });
         } catch (err) {
-          set({ isLoading: false });
           throw err;
+        } finally {
+          set({ isLoading: false });
         }
       },
       next: async (data?: Record<string, any>) => {
@@ -32,10 +33,11 @@ export const useExperimentStore = create<ExperimentStore>()(
         set({ isLoading: true });
         try {
           const nextStep = await traverse(step, data);
-          set({ step: nextStep, isLoading: false });
+          set({ step: nextStep });
         } catch (err) {
-          set({ isLoading: false });
           throw err;
+        } finally {
+          set({ isLoading: false });
         }
       },
     }),
@@ -43,6 +45,6 @@ export const useExperimentStore = create<ExperimentStore>()(
       name: "experiment",
       storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => ({ step: state.step }),
-    }
-  )
+    },
+  ),
 );

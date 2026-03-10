@@ -16,15 +16,6 @@ export interface ButtonComponent extends BaseLayoutComponent<
   }
 > {}
 
-export interface ForEachComponent extends BaseLayoutComponent<
-  "for-each",
-  {
-    loopValue: string | string[];
-    component: ScreenComponent;
-    indexVariableName?: string;
-    valueVariableName?: string;
-  }
-> {}
 
 export interface GroupComponent extends BaseLayoutComponent<
   "group",
@@ -34,4 +25,6 @@ export interface GroupComponent extends BaseLayoutComponent<
   }
 > {}
 
-export type LayoutComponent = ButtonComponent | ForEachComponent | GroupComponent;
+export type LayoutComponent =
+  | ButtonComponent
+  | GroupComponent;

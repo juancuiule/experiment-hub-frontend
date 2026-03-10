@@ -5,15 +5,15 @@ import { Context } from "@/lib/types";
 import { resolveValuesInString } from "@/lib/resolve";
 import { buildSchema, FieldErrors } from "@/lib/validation";
 import { useState } from "react";
-import Button from "./Button";
-import CheckboxGroup from "./CheckboxGroup";
-import Dropdown from "./Dropdown";
-import Input from "./Input";
-import Radio from "./Radio";
-import Rating from "./Rating";
-import RichText from "./RichText";
-import SingleCheckbox from "./SingleCheckbox";
-import Slider from "./Slider";
+import Button from "./components/Button";
+import CheckboxGroup from "./components/CheckboxGroup";
+import Dropdown from "./components/Dropdown";
+import Input from "./components/Input";
+import Radio from "./components/Radio";
+import Rating from "./components/Rating";
+import RichText from "./components/RichText";
+import SingleCheckbox from "./components/SingleCheckbox";
+import Slider from "./components/Slider";
 
 type ScreenProps = {
   screen: FrameworkScreen;
@@ -28,10 +28,7 @@ function extractData(
 ): Record<string, any> {
   if (component.componentFamily !== "response") return {};
   const { dataKey } = component.props;
-  if (
-    component.template === "multiple-check" ||
-    component.template === "checkbox"
-  ) {
+  if (component.template === "checkboxes") {
     return { [dataKey]: formData.getAll(dataKey) as string[] };
   }
   return { [dataKey]: formData.get(dataKey) };
@@ -45,9 +42,9 @@ function renderComponent(
   context: Context,
 ) {
   switch (component.componentFamily) {
-    case "layout":
+    case "layout": {
       switch (component.template) {
-        case "button":
+        case "button": {
           return (
             <Button
               key={index}
@@ -55,20 +52,42 @@ function renderComponent(
               disabled={isLoading || component.props.disabled}
             />
           );
+        }
+        case "group": {
+          return (
+            <div>
+              {component.props.components.map((child, i) =>
+                renderComponent(child, i, isLoading, errors, context),
+              )}
+            </div>
+          );
+        }
       }
-      break;
+    }
 
-    case "content":
+    case "content": {
       switch (component.template) {
-        case "rich-text":
+        case "rich-text": {
           return (
             <RichText
               key={index}
               content={resolveValuesInString(component.props.content, context)}
             />
           );
+        }
+        case "audio": {
+          return <audio src={component.props.url} />;
+        }
+        case "image": {
+          return (
+            <img src={component.props.url} alt={component.props.alt || ""} />
+          );
+        }
+        case "video": {
+          return <video src={component.props.url} controls />;
+        }
       }
-      break;
+    }
 
     case "response": {
       const { dataKey } = component.props;
@@ -94,8 +113,7 @@ function renderComponent(
               error={error}
             />
           );
-        case "multiple-check":
-        case "checkbox":
+        case "checkboxes":
           return (
             <CheckboxGroup
               key={dataKey}
@@ -191,9 +209,9 @@ export function Screen({ screen, isLoading, onNext, context }: ScreenProps) {
           setErrors({});
           // TODO: surface error to user (toast / inline message)
           onNext(result.data)
-            .then(() => {
-              target?.reset();
-            })
+            // .then(() => {
+            //   target?.reset();
+            // })
             .catch((err) =>
               console.error("Failed to advance experiment:", err),
             );

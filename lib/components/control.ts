@@ -1,18 +1,27 @@
 import { BaseComponent, ScreenComponent } from ".";
 import { ConditionConfig } from "../conditions";
 
-export interface BaseControlCompoment<
+export interface BaseControlComponent<
   U extends string,
   Props,
 > extends BaseComponent<"control", U> {
   props: Props;
 }
 
-export interface ConditionalCompoment extends BaseControlCompoment<
+export interface ConditionalComponent extends BaseControlComponent<
   "conditional",
   ConditionConfig & {
     component: ScreenComponent;
   }
 > {}
 
-export type ControlComponent = ConditionalCompoment;
+export interface ForEachComponent extends BaseControlComponent<
+  "for-each",
+  (
+    | { type: "static"; values: string[] }
+    | { type: "dynamic"; dataKey: `$$${string}` | `$${string}` }
+  ) & { component: ScreenComponent }
+> {}
+
+
+export type ControlComponent = ConditionalComponent | ForEachComponent

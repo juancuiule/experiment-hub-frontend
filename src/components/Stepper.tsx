@@ -1,7 +1,7 @@
-import { PathNode } from "@/lib/nodes";
+import { StepperConfig } from "@/lib/nodes";
 
 type Props = {
-  config: NonNullable<PathNode["props"]["stepper"]>;
+  config: StepperConfig;
   step: number;
   total: number;
 };

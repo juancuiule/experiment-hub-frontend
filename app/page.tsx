@@ -2,7 +2,7 @@
 
 import { getActiveState } from "@/lib/flow";
 import Button from "@/src/components/Button";
-import { Screen } from "@/src/components/Screen";
+import { Screen } from "@/src/Screen";
 import Stepper from "@/src/components/Stepper";
 import { useExperimentStore } from "@/src/data/store";
 

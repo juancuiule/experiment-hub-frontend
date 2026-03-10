@@ -13,10 +13,12 @@ export function isDefined<T>(value: T | null | undefined): value is T {
   return value !== null && value !== undefined;
 }
 
+// This is a dev stub for simulating async operations in the flow.
+// It should be replaced with real API calls or removed in production.
 export async function send(context: Context) {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(context);
-    }, 1000);
+    }, Math.random() * 2_500 + 500); // Simulate 0.5-3s network delay
   });
 }

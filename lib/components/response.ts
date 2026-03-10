@@ -75,18 +75,8 @@ export interface RadioComponent extends BaseResponseComponent<
   }
 > {}
 
-export interface CheckboxComponent extends BaseResponseComponent<
-  "checkbox",
-  {
-    label: string;
-    options: Option[];
-    min?: number;
-    max?: number;
-  }
-> {}
-
-export interface MultipleCheckComponent extends BaseResponseComponent<
-  "multiple-check",
+export interface CheckboxesComponent extends BaseResponseComponent<
+  "checkboxes",
   {
     label: string;
     options: Option[];
@@ -112,6 +102,5 @@ export type ResponseComponent =
   | TimeInputComponent
   | DropdownComponent
   | RadioComponent
-  | CheckboxComponent
-  | RatingComponent
-  | MultipleCheckComponent;
+  | CheckboxesComponent
+  | RatingComponent;
