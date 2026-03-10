@@ -2,18 +2,10 @@
 import { ScreenComponent } from "@/lib/components";
 import { FrameworkScreen } from "@/lib/screen";
 import { Context } from "@/lib/types";
-import { resolveValuesInString } from "@/lib/resolve";
 import { buildSchema } from "@/lib/validation";
 import { useState } from "react";
-import Button from "./components/Button";
-import CheckboxGroup from "./components/CheckboxGroup";
-import Dropdown from "./components/Dropdown";
-import Input from "./components/Input";
-import Radio from "./components/Radio";
-import Rating from "./components/Rating";
-import RichText from "./components/RichText";
-import SingleCheckbox from "./components/SingleCheckbox";
-import Slider from "./components/Slider";
+import Markdown from "react-markdown";
+import { twMerge } from "tailwind-merge";
 
 type FieldErrors = Record<string, string>;
 
@@ -36,153 +28,111 @@ function extractData(
   return { [dataKey]: formData.get(dataKey) };
 }
 
-function renderComponent(
-  component: ScreenComponent,
-  index: number,
-  isLoading: boolean,
-  errors: FieldErrors,
-  context: Context,
-) {
+function RenderComponent({ component }: { component: ScreenComponent }) {
   switch (component.componentFamily) {
-    case "layout": {
+    case "content": {
       switch (component.template) {
-        case "button": {
-          return (
-            <Button
-              key={index}
-              text={isLoading ? "Loading..." : component.props.text}
-              disabled={isLoading || component.props.disabled}
-            />
-          );
-        }
-        case "group": {
+        case "rich-text": {
           return (
             <div>
-              {component.props.components.map((child, i) =>
-                renderComponent(child, i, isLoading, errors, context),
-              )}
+              <Markdown
+                components={{
+                  h1: ({ node, ...props }) => (
+                    <h1 {...props} className="text-5xl font-bold" />
+                  ),
+                  h2: ({ node, ...props }) => (
+                    <h2 {...props} className="text-4xl font-bold" />
+                  ),
+                  h3: ({ node, ...props }) => (
+                    <h3 {...props} className="text-2xl font-bold" />
+                  ),
+                  a: ({ node, ...props }) => (
+                    <a {...props} className="text-info underline" />
+                  ),
+                  blockquote: ({ node, ...props }) => (
+                    <blockquote
+                      {...props}
+                      className="border-l-4 border-gray-300 pl-4 text-gray-500"
+                    />
+                  ),
+                  ul: ({ node, ...props }) => (
+                    <ul {...props} className="list-disc list-inside" />
+                  ),
+                  ol: ({ node, ...props }) => (
+                    <ol {...props} className="list-decimal list-inside" />
+                  ),
+                  p: ({ node, ...props }) => (
+                    <p className="text-black" {...props} />
+                  ),
+                  code: ({ node, ...props }) => (
+                    <code
+                      {...props}
+                      className="bg-gray-100 text-gray-800 rounded p-1 text-sm whitespace-break-spaces"
+                    />
+                  ),
+                  pre: ({ node, ...props }) => (
+                    <pre
+                      {...props}
+                      className="bg-gray-100 text-gray-800 rounded text-sm [&>code]:block [&>code]:bg-transparent"
+                    />
+                  ),
+                }}
+              >
+                {component.props.content}
+              </Markdown>
             </div>
           );
         }
       }
     }
-
-    case "content": {
+    case "response": {
       switch (component.template) {
-        case "rich-text": {
+        case "text-input": {
           return (
-            <RichText
-              key={index}
-              content={resolveValuesInString(component.props.content, context)}
-            />
+            <div className="my-3 flex flex-col gap-2">
+              <label className="text-md">{component.props.label}</label>
+              <input
+                type="text"
+                name={component.props.dataKey}
+                className="border border-gray-300 w-full p-1"
+              />
+            </div>
           );
-        }
-        case "audio": {
-          return <audio src={component.props.url} />;
-        }
-        case "image": {
-          return (
-            <img src={component.props.url} alt={component.props.alt || ""} />
-          );
-        }
-        case "video": {
-          return <video src={component.props.url} controls />;
         }
       }
     }
-
-    case "response": {
-      const { dataKey } = component.props;
-      const error = errors[dataKey];
+    case "layout": {
       switch (component.template) {
-        case "text-input":
+        case "button": {
           return (
-            <Input
-              key={dataKey}
-              dataKey={dataKey}
-              label={resolveValuesInString(component.props.label, context)}
-              placeholder={component.props.placeholder}
-              error={error}
-            />
+            <div className="pt-5 mt-auto">
+              <button
+                className={twMerge(
+                  "w-full h-10 bg-black text-white uppercase font-medium rounded-sm hover:bg-black/80 cursor-pointer",
+                )}
+              >
+                {component.props.text}
+              </button>
+            </div>
           );
-        case "likert-scale":
-          return (
-            <Rating
-              key={dataKey}
-              dataKey={dataKey}
-              label={resolveValuesInString(component.props.label, context)}
-              options={component.props.options}
-              error={error}
-            />
-          );
-        case "checkboxes":
-          return (
-            <CheckboxGroup
-              key={dataKey}
-              dataKey={dataKey}
-              label={resolveValuesInString(component.props.label, context)}
-              options={component.props.options}
-              error={error}
-            />
-          );
-        case "slider":
-          return (
-            <Slider
-              key={dataKey}
-              dataKey={dataKey}
-              label={resolveValuesInString(component.props.label, context)}
-              min={component.props.min}
-              max={component.props.max}
-              step={component.props.step}
-              defaultValue={component.props.defaultValue}
-              minLabel={component.props.minLabel}
-              maxLabel={component.props.maxLabel}
-              error={error}
-            />
-          );
-        case "dropdown":
-          return (
-            <Dropdown
-              key={dataKey}
-              dataKey={dataKey}
-              label={resolveValuesInString(component.props.label, context)}
-              options={component.props.options}
-              error={error}
-            />
-          );
-        case "radio":
-          return (
-            <Radio
-              key={dataKey}
-              dataKey={dataKey}
-              label={resolveValuesInString(component.props.label, context)}
-              options={component.props.options}
-              error={error}
-            />
-          );
-        case "single-checkbox":
-          return (
-            <SingleCheckbox
-              key={dataKey}
-              dataKey={dataKey}
-              label={resolveValuesInString(component.props.label, context)}
-              defaultValue={component.props.defaultValue}
-              error={error}
-            />
-          );
+        }
       }
-      break;
     }
   }
-  return null;
+
+  return (
+    <pre className="text-xs">
+      <code>{JSON.stringify(component, null, 2)}</code>
+    </pre>
+  );
 }
 
 export function Screen({ screen, isLoading, onNext, context }: ScreenProps) {
   const [errors, setErrors] = useState<FieldErrors>({});
 
   return (
-    <div>
       <form
+        className="mt-5 h-full flex-1 flex flex-col"
         key={screen.slug}
         onSubmit={(e) => {
           e.preventDefault();
@@ -219,15 +169,21 @@ export function Screen({ screen, isLoading, onNext, context }: ScreenProps) {
             );
         }}
       >
-        {screen.components.map((component, i) =>
-          renderComponent(component, i, isLoading, errors, context),
-        )}
+        {screen.components.map((component, i) => (
+          <RenderComponent
+            key={
+              component.componentFamily === "response"
+                ? component.props.dataKey
+                : i
+            }
+            component={component}
+          />
+        ))}
         {Object.keys(errors).length > 0 && (
           <p className="text-red-500 text-sm mt-2">
             Please fill in all required fields before continuing.
           </p>
         )}
       </form>
-    </div>
   );
 }

@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Montserrat, Overpass_Mono } from "next/font/google";
+import { twMerge } from "tailwind-merge";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const montserrat = Montserrat({
+  variable: "--font-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const overpassMono = Overpass_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
 });
 
@@ -23,12 +24,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en light">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={twMerge(
+          montserrat.variable,
+          overpassMono.variable,
+          "antialiased",
+        )}
       >
-        <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
-          <main className="w-full max-w-md px-8 py-16">{children}</main>
+        <div className="flex min-h-screen items-center justify-center">
+          <main className="w-full max-w-lg min-h-svh outline p-6 flex flex-col">
+            <nav className="flex flex-row items-center justify-center py-2">
+              <img
+                src="https://avatars.githubusercontent.com/u/132835276?s=200&v=4"
+                className="h-12 w-auto"
+                alt="Experiment Hub logo with text"
+              />
+            </nav>
+            {children}
+          </main>
         </div>
       </body>
     </html>
