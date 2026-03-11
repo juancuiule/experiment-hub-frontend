@@ -10,8 +10,10 @@ export interface BaseControlComponent<
 
 export interface ConditionalComponent extends BaseControlComponent<
   "conditional",
-  ConditionConfig & {
+  {
+    if: ConditionConfig;
     component: ScreenComponent;
+    else?: ScreenComponent;
   }
 > {}
 
@@ -23,5 +25,4 @@ export interface ForEachComponent extends BaseControlComponent<
   ) & { component: ScreenComponent }
 > {}
 
-
-export type ControlComponent = ConditionalComponent | ForEachComponent
+export type ControlComponent = ConditionalComponent | ForEachComponent;

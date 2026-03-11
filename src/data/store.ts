@@ -12,39 +12,39 @@ type ExperimentStore = {
 };
 
 export const useExperimentStore = create<ExperimentStore>()(
-  persist(
-    (set, get) => ({
-      step: null,
-      isLoading: false,
-      start: async (startNodeId?: string) => {
-        set({ isLoading: true });
-        try {
-          const step = await startExperiment(experiment, startNodeId);
-          set({ step });
-        } catch (err) {
-          throw err;
-        } finally {
-          set({ isLoading: false });
-        }
-      },
-      next: async (data?: Record<string, any>) => {
-        const { step } = get();
-        if (!step) return;
-        set({ isLoading: true });
-        try {
-          const nextStep = await traverse(step, data);
-          set({ step: nextStep });
-        } catch (err) {
-          throw err;
-        } finally {
-          set({ isLoading: false });
-        }
-      },
-    }),
-    {
-      name: "experiment",
-      storage: createJSONStorage(() => sessionStorage),
-      partialize: (state) => ({ step: state.step }),
+  (set, get) => ({
+    step: null,
+    isLoading: false,
+    start: async (startNodeId?: string) => {
+      set({ isLoading: true });
+      try {
+        const step = await startExperiment(experiment, startNodeId);
+        set({ step });
+      } catch (err) {
+        throw err;
+      } finally {
+        set({ isLoading: false });
+      }
     },
-  ),
+    next: async (data?: Record<string, any>) => {
+      const { step } = get();
+      if (!step) return;
+      set({ isLoading: true });
+      try {
+        const nextStep = await traverse(step, data);
+        set({ step: nextStep });
+      } catch (err) {
+        throw err;
+      } finally {
+        set({ isLoading: false });
+      }
+    },
+  }),
+  // persist(
+  //   {
+  //     name: "experiment",
+  //     // storage: createJSONStorage(() => sessionStorage),
+  //     partialize: (state) => ({ step: state.step }),
+  //   },
+  // ),
 );

@@ -1,0 +1,58 @@
+"use client";
+
+import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
+import { Controller, UseFormReturn } from "react-hook-form";
+import { RadioComponent } from "@/lib/components/response";
+import { Context } from "@/lib/types";
+import { FieldError, resolveString } from "../primitives";
+
+type Props = {
+  component: RadioComponent;
+  form: UseFormReturn<Record<string, any>>;
+  context: Context;
+};
+
+export function Radio({ component, form, context }: Props) {
+  const {
+    control,
+    formState: { errors },
+  } = form;
+  const { dataKey } = component.props;
+
+  return (
+    <Controller
+      control={control}
+      name={dataKey}
+      render={({ field }) => (
+        <div className="my-4 flex flex-col gap-1">
+          <label className="text-sm">
+            {resolveString(component.props.label, context)}
+          </label>
+          <RadioGroupPrimitive.Root
+            value={field.value}
+            onValueChange={field.onChange}
+            className="flex flex-col gap-2 mt-2"
+          >
+            {component.props.options.map((opt) => (
+              <div key={opt.value} className="flex items-center gap-2">
+                <RadioGroupPrimitive.Item
+                  id={`${dataKey}-${opt.value}`}
+                  value={opt.value}
+                  className="w-4 h-4 rounded-full border border-gray-400 flex items-center justify-center flex-shrink-0 data-[state=checked]:border-black transition-colors"
+                >
+                  <RadioGroupPrimitive.Indicator className="w-2 h-2 rounded-full bg-black" />
+                </RadioGroupPrimitive.Item>
+                <label className="text-sm" htmlFor={`${dataKey}-${opt.value}`}>
+                  {opt.label}
+                </label>
+              </div>
+            ))}
+          </RadioGroupPrimitive.Root>
+          <FieldError
+            message={errors[dataKey]?.message as string | undefined}
+          />
+        </div>
+      )}
+    />
+  );
+}

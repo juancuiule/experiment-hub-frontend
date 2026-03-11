@@ -17,6 +17,7 @@ describe("fork", async () => {
         id: "fork-group",
         type: "fork",
         props: {
+          name: "Fork A/B Group",
           forks: [
             { id: "groupA", name: "Group A", weight: 1 },
             { id: "groupB", name: "Group B", weight: 1 },
@@ -69,6 +70,7 @@ describe("fork", async () => {
           id: "fork-heavy",
           type: "fork",
           props: {
+            name: "Fork Heavy",
             forks: [
               { id: "rare", name: "Rare", weight: 1 },
               { id: "common", name: "Common", weight: 9 },
@@ -112,7 +114,10 @@ describe("fork", async () => {
         {
           id: "fork-bad",
           type: "fork",
-          props: { forks: [{ id: "x", name: "X", weight: 1 }] },
+          props: {
+            name: "Fork Bad",
+            forks: [{ id: "x", name: "X", weight: 1 }],
+          },
         },
       ],
       edges: [seq("start", "fork-bad")],

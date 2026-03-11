@@ -1,0 +1,66 @@
+"use client";
+
+import * as SliderPrimitive from "@radix-ui/react-slider";
+import { Controller, UseFormReturn } from "react-hook-form";
+import { SliderComponent } from "@/lib/components/response";
+import { Context } from "@/lib/types";
+import { FieldError, resolveString } from "../primitives";
+
+type Props = {
+  component: SliderComponent;
+  form: UseFormReturn<Record<string, any>>;
+  context: Context;
+};
+
+export function Slider({ component, form, context }: Props) {
+  const { control, formState: { errors } } = form;
+  const { dataKey } = component.props;
+  const min = component.props.min ?? 0;
+  const max = component.props.max ?? 100;
+
+  return (
+    <Controller
+      control={control}
+      name={dataKey}
+      render={({ field }) => {
+        const value = field.value ?? min;
+        return (
+          <div className="my-4 flex flex-col gap-1">
+            <div className="flex items-center justify-between">
+              <label className="text-sm">{resolveString(component.props.label, context)}</label>
+              {component.props.showValue && (
+                <span className="text-sm font-medium tabular-nums">{value}</span>
+              )}
+            </div>
+            <div className="mt-4">
+              <SliderPrimitive.Root
+                value={[value]}
+                min={min}
+                max={max}
+                step={component.props.step ?? 1}
+                onValueChange={([val]) => field.onChange(val)}
+                className="relative flex items-center w-full h-5 select-none touch-none"
+              >
+                <SliderPrimitive.Track className="relative h-px bg-gray-300 flex-1 rounded-full">
+                  <SliderPrimitive.Range className="absolute h-full bg-black rounded-full" />
+                </SliderPrimitive.Track>
+                <SliderPrimitive.Thumb className="block w-4 h-4 bg-black rounded-full outline-none focus-visible:ring-2 focus-visible:ring-black/20 cursor-grab active:cursor-grabbing" />
+              </SliderPrimitive.Root>
+            </div>
+            {(component.props.minLabel || component.props.maxLabel) && (
+              <div className="flex justify-between mt-1">
+                <span className="text-xs text-gray-500 uppercase tracking-wide">
+                  {component.props.minLabel}
+                </span>
+                <span className="text-xs text-gray-500 uppercase tracking-wide">
+                  {component.props.maxLabel}
+                </span>
+              </div>
+            )}
+            <FieldError message={errors[dataKey]?.message as string | undefined} />
+          </div>
+        );
+      }}
+    />
+  );
+}

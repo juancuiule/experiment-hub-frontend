@@ -1,6 +1,5 @@
 import { Context } from "./types";
 
-
 export type BaseOperator = "lt" | "lte" | "gt" | "gte" | "eq" | "neq";
 
 export type ArrayOperator = "contains" | `length-${BaseOperator}`;
@@ -33,7 +32,10 @@ export function isBaseOperator(operator: Operator): operator is BaseOperator {
   return ["lt", "lte", "gt", "gte", "eq", "neq"].includes(operator);
 }
 
-export function getValue(context: Context, key: `$$${string}` | `@${string}` | `$${string}`) {
+export function getValue(
+  context: Context,
+  key: `$$${string}` | `@${string}` | `$${string}`,
+) {
   if (key.startsWith("$$")) {
     return key
       .slice(2)

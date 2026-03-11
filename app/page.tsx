@@ -6,6 +6,8 @@ type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
+export const revalidate = 0; // Disable caching to ensure fresh data on each request
+
 function determineStartingNode(
   searchParams: { [key: string]: string | string[] | undefined },
   experiment: ExperimentFlow,
@@ -40,7 +42,7 @@ export default async function Home(props: Props) {
   const searchParams = await props.searchParams;
   const startingNode = determineStartingNode(searchParams, experiment);
 
-  console.log(startingNode)
+  console.log(startingNode);
 
   return <Experiment startingNode={startingNode} />;
 }
