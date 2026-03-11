@@ -7,7 +7,7 @@ import { makeScreen, seq } from "../test-helpers";
 // Loop (static values)
 // ---------------------------------------------------------------------------
 
-describe("loop (static values)", async () => {
+describe("loop (static values)", () => {
   const flow: ExperimentFlow = {
     nodes: [
       { id: "start", type: "start" },
@@ -66,13 +66,24 @@ describe("loop (static values)", async () => {
     }
     expect(seen).toEqual(["football", "basketball", "tennis"]);
   });
+
+  it("stores per-iteration data nested under loop id, value, and template slug", async () => {
+    let step = await startExperiment(flow, "start");
+    step = await traverse(step, { liked: true }); // football
+    step = await traverse(step, { liked: false }); // basketball
+    step = await traverse(step, { liked: true }); // tennis → exit
+    // Data is keyed as context.data[loopId][value][screenSlug]
+    expect(step.context.data?.["loop-sports"]?.["football"]?.["sport-screen"]).toEqual({ liked: true });
+    expect(step.context.data?.["loop-sports"]?.["basketball"]?.["sport-screen"]).toEqual({ liked: false });
+    expect(step.context.data?.["loop-sports"]?.["tennis"]?.["sport-screen"]).toEqual({ liked: true });
+  });
 });
 
 // ---------------------------------------------------------------------------
 // Loop (dynamic values from context)
 // ---------------------------------------------------------------------------
 
-describe("loop (dynamic values from context)", async () => {
+describe("loop (dynamic values from context)", () => {
   const flow: ExperimentFlow = {
     nodes: [
       { id: "start", type: "start" },
@@ -133,7 +144,7 @@ describe("loop (dynamic values from context)", async () => {
 // Loop tracking (context.loops)
 // ---------------------------------------------------------------------------
 
-describe("loop tracking (context.loops)", async () => {
+describe("loop tracking (context.loops)", () => {
   const flow: ExperimentFlow = {
     nodes: [
       { id: "start", type: "start" },

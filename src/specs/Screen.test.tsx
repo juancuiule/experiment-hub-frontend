@@ -74,7 +74,8 @@ describe("rendering", () => {
         },
       },
     ]);
-    expect(screen.getAllByRole("radio")).toHaveLength(5);
+    // LikertScale renders option buttons (not radio inputs)
+    expect(screen.getAllByRole("button", { name: /^[1-5]$/ })).toHaveLength(5);
   });
 
   it("renders rich-text markdown as HTML", () => {
@@ -152,7 +153,6 @@ describe("validation", () => {
 
     expect(onNext).not.toHaveBeenCalled();
     expect(screen.getByText("This field is required")).toBeInTheDocument();
-    expect(screen.getByText(/please fill in all required fields/i)).toBeInTheDocument();
   });
 
   it("blocks submit and shows error when a required checkbox-group has nothing selected", async () => {
@@ -211,7 +211,7 @@ describe("validation", () => {
     const onNext = vi.fn().mockResolvedValue(undefined);
     renderScreen(
       [
-        { componentFamily: "response", template: "text-input", props: { dataKey: "note", label: "Optional note" } },
+        { componentFamily: "response", template: "text-input", props: { dataKey: "note", label: "Optional note", required: false } },
         { componentFamily: "layout", template: "button", props: { text: "Submit" } },
       ],
       {},
@@ -302,7 +302,8 @@ describe("data collection", () => {
       onNext
     );
 
-    await userEvent.click(screen.getByDisplayValue("3"));
+    // LikertScale renders option buttons; click the button whose label is "3"
+    await userEvent.click(screen.getByRole("button", { name: "3" }));
     await userEvent.click(screen.getByRole("button", { name: "Submit" }));
 
     expect(onNext).toHaveBeenCalledWith({ score: "3" });

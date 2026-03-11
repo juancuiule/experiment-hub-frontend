@@ -23,11 +23,6 @@ function checkNodeIdentity(flow: ExperimentFlow): ValidationError[] {
   const starts = flow.nodes.filter((n) => n.type === "start");
   if (starts.length === 0) {
     errors.push({ code: "missing-start", message: "Flow has no start node" });
-  } else if (starts.length > 1) {
-    errors.push({
-      code: "multiple-start",
-      message: `Flow has ${starts.length} start nodes; exactly one is required`,
-    });
   }
 
   return errors;

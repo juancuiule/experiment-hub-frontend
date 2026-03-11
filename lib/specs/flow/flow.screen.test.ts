@@ -7,7 +7,7 @@ import { makeScreen, seq } from "../test-helpers";
 // Screen traversal
 // ---------------------------------------------------------------------------
 
-describe("screen traversal", async () => {
+describe("screen traversal", () => {
   const flow: ExperimentFlow = {
     nodes: [
       { id: "start", type: "start" },
@@ -32,11 +32,12 @@ describe("screen traversal", async () => {
     expect(step3.context.data?.["slug-b"]).toEqual({ name: "juan" });
   });
 
-  it("stays on the last screen when there is no sequential edge out of it", async () => {
+  it("transitions to end state when there is no sequential edge out of the last screen", async () => {
     const step1 = await startExperiment(flow, "start");
     const step2 = await traverse(step1, { age: 25 }); // → screen-b
-    const step3 = await traverse(step2, { name: "juan" }); // store on screen-b, no next node
-    const step4 = await traverse(step3, {}); // no data → no-op
+    const step3 = await traverse(step2, { name: "juan" }); // screen-b has no outgoing edge → end
+    expect(step3.state.type).toBe("end");
+    const step4 = await traverse(step3, {}); // already at end → no-op
     expect(step4).toBe(step3);
   });
 });
@@ -45,7 +46,7 @@ describe("screen traversal", async () => {
 // Checkpoint
 // ---------------------------------------------------------------------------
 
-describe("checkpoint", async () => {
+describe("checkpoint", () => {
   const flow: ExperimentFlow = {
     nodes: [
       { id: "start", type: "start" },
@@ -78,7 +79,7 @@ describe("checkpoint", async () => {
 // Checkpoint at the end of the flow (no sequential edge out)
 // ---------------------------------------------------------------------------
 
-describe("checkpoint at end of flow", async () => {
+describe("checkpoint at end of flow", () => {
   it("transitions to end state and records the timestamp", async () => {
     const flow: ExperimentFlow = {
       nodes: [

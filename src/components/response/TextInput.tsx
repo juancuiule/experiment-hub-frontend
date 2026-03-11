@@ -17,9 +17,10 @@ export function TextInput({ component, form, context }: Props) {
 
   return (
     <div className="my-4 flex flex-col gap-1">
-      <label className="text-sm">{resolveString(component.props.label, context)}</label>
+      <label htmlFor={dataKey} className="text-sm">{resolveString(component.props.label, context)}</label>
       <input
         {...register(dataKey)}
+        id={dataKey}
         type="text"
         placeholder={component.props.placeholder}
         className={inputBase}

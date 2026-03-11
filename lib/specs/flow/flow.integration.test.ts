@@ -175,7 +175,7 @@ async function runComplexFlow(
   return step;
 }
 
-describe("complex experiment (all node types)", async () => {
+describe("complex experiment (all node types)", () => {
   afterEach(() => vi.restoreAllMocks());
 
   it("completes full flow: google → minor → control path → loop → debrief", async () => {
@@ -234,7 +234,7 @@ describe("complex experiment (all node types)", async () => {
     step = await traverse(step, { q2: "b" });
     const colors: string[] = [];
     while (step.state.type === "in-loop") {
-      colors.push(step.context.currentItem?.value);
+      colors.push(step.context.currentItem!.value);
       step = await traverse(step, { rated: true });
     }
     expect(colors).toEqual(["red", "blue", "green"]);
@@ -245,7 +245,7 @@ describe("complex experiment (all node types)", async () => {
 // Error cases
 // ---------------------------------------------------------------------------
 
-describe("error cases", async () => {
+describe("error cases", () => {
   it("throws when start node has no sequential edge out", async () => {
     const flow: ExperimentFlow = {
       nodes: [{ id: "start", type: "start" }],

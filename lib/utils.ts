@@ -19,6 +19,6 @@ export async function send(context: Context) {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(context);
-    }, Math.random() * 2_500 + 500); // Simulate 0.5-3s network delay
+    }, 1); // Minimal delay — replace with a real API call in production
   });
 }

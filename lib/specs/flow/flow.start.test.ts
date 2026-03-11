@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { startExperiment, traverse, next } from "@/lib/flow";
+import { startExperiment, traverse, next, getActiveState } from "@/lib/flow";
 import { ExperimentFlow } from "@/lib/types";
 import { makeScreen, seq } from "../test-helpers";
 
@@ -7,7 +7,7 @@ import { makeScreen, seq } from "../test-helpers";
 // startExperiment
 // ---------------------------------------------------------------------------
 
-describe("startExperiment", async () => {
+describe("startExperiment", () => {
   const flow: ExperimentFlow = {
     nodes: [
       {
@@ -59,7 +59,7 @@ describe("startExperiment", async () => {
 // Start node without props → "default" group
 // ---------------------------------------------------------------------------
 
-describe("start node without props", async () => {
+describe("start node without props", () => {
   it("records 'default' as the group when start node has no props", async () => {
     const flow: ExperimentFlow = {
       nodes: [{ id: "start", type: "start" }, makeScreen("s1", "s1")],
@@ -74,7 +74,7 @@ describe("start node without props", async () => {
 // traverse no-op on "end" state
 // ---------------------------------------------------------------------------
 
-describe("traverse no-op on end state", async () => {
+describe("traverse no-op on end state", () => {
   const flow: ExperimentFlow = {
     nodes: [{ id: "start", type: "start" }, makeScreen("s1", "s1")],
     edges: [seq("start", "s1")],
@@ -93,7 +93,7 @@ describe("traverse no-op on end state", async () => {
 // next() — .then() chaining helper
 // ---------------------------------------------------------------------------
 
-describe("next() — .then() chaining helper", async () => {
+describe("next() — .then() chaining helper", () => {
   const flow: ExperimentFlow = {
     nodes: [
       { id: "start", type: "start" },
@@ -136,5 +136,74 @@ describe("next() — .then() chaining helper", async () => {
 
     expect(chained.state).toEqual(manual.state);
     expect(chained.context).toEqual(manual.context);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getActiveState — unwraps nested in-path / in-loop states
+// ---------------------------------------------------------------------------
+
+describe("getActiveState", () => {
+  it("returns an in-node state unchanged", async () => {
+    const flow: ExperimentFlow = {
+      nodes: [{ id: "start", type: "start" }, makeScreen("s1", "s1")],
+      edges: [seq("start", "s1")],
+    };
+    const step = await startExperiment(flow, "start");
+    expect(getActiveState(step.state)).toBe(step.state);
+    expect(getActiveState(step.state).type).toBe("in-node");
+  });
+
+  it("unwraps in-path to the innermost screen state", async () => {
+    const flow: ExperimentFlow = {
+      nodes: [
+        { id: "start", type: "start" },
+        { id: "path-p", type: "path", props: { name: "P" } },
+        makeScreen("s1", "s1"),
+        makeScreen("s2", "s2"),
+      ],
+      edges: [
+        seq("start", "path-p"),
+        { type: "path-contains", from: "path-p", to: "s1", order: 0 },
+        { type: "path-contains", from: "path-p", to: "s2", order: 1 },
+      ],
+    };
+    const step = await startExperiment(flow, "start");
+    expect(step.state.type).toBe("in-path");
+    const active = getActiveState(step.state);
+    expect(active.type).toBe("in-node");
+    expect((active as any).node.id).toBe("s1");
+  });
+
+  it("unwraps in-loop to the innermost screen state", async () => {
+    const flow: ExperimentFlow = {
+      nodes: [
+        { id: "start", type: "start" },
+        { id: "loop-l", type: "loop", props: { type: "static", values: ["a", "b"] } },
+        makeScreen("s-item", "item"),
+        makeScreen("s-end", "end"),
+      ],
+      edges: [
+        seq("start", "loop-l"),
+        { type: "loop-template", from: "loop-l", to: "s-item" },
+        seq("loop-l", "s-end"),
+      ],
+    };
+    const step = await startExperiment(flow, "start");
+    expect(step.state.type).toBe("in-loop");
+    const active = getActiveState(step.state);
+    expect(active.type).toBe("in-node");
+    expect((active as any).node.id).toBe("s-item");
+  });
+
+  it("returns end state unchanged", async () => {
+    const flow: ExperimentFlow = {
+      nodes: [{ id: "start", type: "start" }, makeScreen("s1", "s1")],
+      edges: [seq("start", "s1")],
+    };
+    let step = await startExperiment(flow, "start");
+    step = await traverse(step, {});
+    expect(step.state.type).toBe("end");
+    expect(getActiveState(step.state)).toBe(step.state);
   });
 });

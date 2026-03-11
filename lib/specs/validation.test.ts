@@ -32,7 +32,7 @@ describe("text-input", () => {
   it("passes an empty string when not required", () => {
     const schema = buildSchema(
       screen([
-        { componentFamily: "response", template: "text-input", props: { dataKey: "name", label: "Name" } },
+        { componentFamily: "response", template: "text-input", props: { dataKey: "name", label: "Name", required: false } },
       ])
     );
     expect(schema.safeParse({ name: "" }).success).toBe(true);
@@ -95,7 +95,7 @@ describe("radio", () => {
         {
           componentFamily: "response",
           template: "radio",
-          props: { dataKey: "choice", label: "Pick", options: [] },
+          props: { dataKey: "choice", label: "Pick", options: [], required: false },
         },
       ])
     );
@@ -197,7 +197,7 @@ describe("likert-scale", () => {
   it("passes when empty and not required", () => {
     const schema = buildSchema(
       screen([
-        { componentFamily: "response", template: "likert-scale", props: { dataKey: "score", label: "Rate", options: likertOptions } },
+        { componentFamily: "response", template: "likert-scale", props: { dataKey: "score", label: "Rate", options: likertOptions, required: false } },
       ])
     );
     expect(schema.safeParse({}).success).toBe(true);
@@ -227,6 +227,33 @@ describe("slider", () => {
     expect(schema.safeParse({ vol: 101 }).success).toBe(false);
   });
 
+  it("fails a value below min", () => {
+    const schema = buildSchema(
+      screen([
+        { componentFamily: "response", template: "slider", props: { dataKey: "vol", label: "Volume", min: 0, max: 100 } },
+      ])
+    );
+    expect(schema.safeParse({ vol: -1 }).success).toBe(false);
+  });
+
+  it("passes value exactly at min boundary", () => {
+    const schema = buildSchema(
+      screen([
+        { componentFamily: "response", template: "slider", props: { dataKey: "vol", label: "Volume", min: 0, max: 100 } },
+      ])
+    );
+    expect(schema.safeParse({ vol: 0 }).success).toBe(true);
+  });
+
+  it("passes value exactly at max boundary", () => {
+    const schema = buildSchema(
+      screen([
+        { componentFamily: "response", template: "slider", props: { dataKey: "vol", label: "Volume", min: 0, max: 100 } },
+      ])
+    );
+    expect(schema.safeParse({ vol: 100 }).success).toBe(true);
+  });
+
   it("coerces string to number", () => {
     const schema = buildSchema(
       screen([
@@ -234,6 +261,34 @@ describe("slider", () => {
       ])
     );
     expect(schema.safeParse({ vol: "75" }).success).toBe(true);
+  });
+
+  it("enforces minValue constraint", () => {
+    const schema = buildSchema(
+      screen([
+        {
+          componentFamily: "response",
+          template: "slider",
+          props: { dataKey: "vol", label: "Volume", min: 0, max: 100, minValue: { value: 20 } },
+        },
+      ])
+    );
+    expect(schema.safeParse({ vol: 10 }).success).toBe(false);
+    expect(schema.safeParse({ vol: 20 }).success).toBe(true);
+  });
+
+  it("enforces maxValue constraint", () => {
+    const schema = buildSchema(
+      screen([
+        {
+          componentFamily: "response",
+          template: "slider",
+          props: { dataKey: "vol", label: "Volume", min: 0, max: 100, maxValue: { value: 80 } },
+        },
+      ])
+    );
+    expect(schema.safeParse({ vol: 81 }).success).toBe(false);
+    expect(schema.safeParse({ vol: 80 }).success).toBe(true);
   });
 });
 
@@ -274,14 +329,14 @@ describe("single-checkbox", () => {
         {
           componentFamily: "response",
           template: "single-checkbox",
-          props: { dataKey: "agree", label: "Agree", defaultValue: false },
+          props: { dataKey: "agree", label: "Agree", defaultValue: false, required: false },
         },
       ])
     );
     expect(schema.safeParse({ agree: false }).success).toBe(true);
   });
 
-  it("enforces shouldBe constraint", () => {
+  it("enforces shouldBe: true constraint", () => {
     const schema = buildSchema(
       screen([
         {
@@ -293,6 +348,20 @@ describe("single-checkbox", () => {
     );
     expect(schema.safeParse({ tos: false }).success).toBe(false);
     expect(schema.safeParse({ tos: true }).success).toBe(true);
+  });
+
+  it("enforces shouldBe: false constraint", () => {
+    const schema = buildSchema(
+      screen([
+        {
+          componentFamily: "response",
+          template: "single-checkbox",
+          props: { dataKey: "opt-out", label: "Opt out", defaultValue: true, shouldBe: false },
+        },
+      ])
+    );
+    expect(schema.safeParse({ "opt-out": true }).success).toBe(false);
+    expect(schema.safeParse({ "opt-out": false }).success).toBe(true);
   });
 });
 
@@ -309,8 +378,8 @@ describe("multi-field screen", () => {
         { componentFamily: "layout", template: "button", props: { text: "Next" } },
       ])
     );
-    expect(schema.safeParse({ name: "Alice", score: 4 }).success).toBe(true);
-    expect(schema.safeParse({ name: "", score: 4 }).success).toBe(false);
+    expect(schema.safeParse({ name: "Alice", score: "3" }).success).toBe(true);
+    expect(schema.safeParse({ name: "", score: "3" }).success).toBe(false);
   });
 
   it("ignores non-response components", () => {
@@ -321,6 +390,179 @@ describe("multi-field screen", () => {
       ])
     );
     // No fields — any object passes
+    expect(schema.safeParse({}).success).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// text-input — advanced constraints
+// ---------------------------------------------------------------------------
+
+describe("text-input advanced constraints", () => {
+  it("enforces minLength", () => {
+    const schema = buildSchema(
+      screen([
+        {
+          componentFamily: "response",
+          template: "text-input",
+          props: { dataKey: "bio", label: "Bio", minLength: { value: 10 } },
+        },
+      ])
+    );
+    expect(schema.safeParse({ bio: "short" }).success).toBe(false);
+    expect(schema.safeParse({ bio: "long enough bio" }).success).toBe(true);
+  });
+
+  it("enforces maxLength", () => {
+    const schema = buildSchema(
+      screen([
+        {
+          componentFamily: "response",
+          template: "text-input",
+          props: { dataKey: "code", label: "Code", maxLength: { value: 5 } },
+        },
+      ])
+    );
+    expect(schema.safeParse({ code: "toolong" }).success).toBe(false);
+    expect(schema.safeParse({ code: "ok" }).success).toBe(true);
+  });
+
+  it("enforces regex pattern", () => {
+    const schema = buildSchema(
+      screen([
+        {
+          componentFamily: "response",
+          template: "text-input",
+          props: { dataKey: "zip", label: "ZIP", pattern: { value: "^\\d{5}$" } },
+        },
+      ])
+    );
+    expect(schema.safeParse({ zip: "abc" }).success).toBe(false);
+    expect(schema.safeParse({ zip: "12345" }).success).toBe(true);
+  });
+
+  it("uses custom minLength errorMessage", () => {
+    const schema = buildSchema(
+      screen([
+        {
+          componentFamily: "response",
+          template: "text-input",
+          props: {
+            dataKey: "bio",
+            label: "Bio",
+            minLength: { value: 10, errorMessage: "Too short" },
+          },
+        },
+      ])
+    );
+    const result = schema.safeParse({ bio: "hi" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.flatten().fieldErrors.bio).toContain("Too short");
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// date-input / time-input
+// ---------------------------------------------------------------------------
+
+describe("date-input", () => {
+  it("fails empty string when required", () => {
+    const schema = buildSchema(
+      screen([
+        { componentFamily: "response", template: "date-input", props: { dataKey: "dob", label: "DOB", required: true } },
+      ])
+    );
+    expect(schema.safeParse({ dob: "" }).success).toBe(false);
+  });
+
+  it("passes a non-empty string when required", () => {
+    const schema = buildSchema(
+      screen([
+        { componentFamily: "response", template: "date-input", props: { dataKey: "dob", label: "DOB", required: true } },
+      ])
+    );
+    expect(schema.safeParse({ dob: "2024-01-15" }).success).toBe(true);
+  });
+
+  it("passes empty when not required", () => {
+    const schema = buildSchema(
+      screen([
+        { componentFamily: "response", template: "date-input", props: { dataKey: "dob", label: "DOB", required: false } },
+      ])
+    );
+    expect(schema.safeParse({}).success).toBe(true);
+  });
+});
+
+describe("time-input", () => {
+  it("fails empty string when required", () => {
+    const schema = buildSchema(
+      screen([
+        { componentFamily: "response", template: "time-input", props: { dataKey: "alarm", label: "Alarm", required: true } },
+      ])
+    );
+    expect(schema.safeParse({ alarm: "" }).success).toBe(false);
+  });
+
+  it("passes a non-empty string when required", () => {
+    const schema = buildSchema(
+      screen([
+        { componentFamily: "response", template: "time-input", props: { dataKey: "alarm", label: "Alarm", required: true } },
+      ])
+    );
+    expect(schema.safeParse({ alarm: "08:30" }).success).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// numeric-input
+// ---------------------------------------------------------------------------
+
+describe("numeric-input", () => {
+  it("passes a number within range", () => {
+    const schema = buildSchema(
+      screen([
+        { componentFamily: "response", template: "numeric-input", props: { dataKey: "age", label: "Age", min: 0, max: 120 } },
+      ])
+    );
+    expect(schema.safeParse({ age: 30 }).success).toBe(true);
+  });
+
+  it("fails below min", () => {
+    const schema = buildSchema(
+      screen([
+        { componentFamily: "response", template: "numeric-input", props: { dataKey: "age", label: "Age", min: 0, max: 120 } },
+      ])
+    );
+    expect(schema.safeParse({ age: -1 }).success).toBe(false);
+  });
+
+  it("fails above max", () => {
+    const schema = buildSchema(
+      screen([
+        { componentFamily: "response", template: "numeric-input", props: { dataKey: "age", label: "Age", min: 0, max: 120 } },
+      ])
+    );
+    expect(schema.safeParse({ age: 121 }).success).toBe(false);
+  });
+
+  it("coerces string to number", () => {
+    const schema = buildSchema(
+      screen([
+        { componentFamily: "response", template: "numeric-input", props: { dataKey: "age", label: "Age", min: 0, max: 120 } },
+      ])
+    );
+    expect(schema.safeParse({ age: "42" }).success).toBe(true);
+  });
+
+  it("passes when optional and absent", () => {
+    const schema = buildSchema(
+      screen([
+        { componentFamily: "response", template: "numeric-input", props: { dataKey: "age", label: "Age", required: false } },
+      ])
+    );
     expect(schema.safeParse({}).success).toBe(true);
   });
 });

@@ -5,7 +5,7 @@ import { evaluateCondition, getValue } from "../conditions";
 // getValue
 // ---------------------------------------------------------------------------
 
-describe("getValue", async () => {
+describe("getValue", () => {
   it("resolves a top-level key", async () => {
     const ctx = { data: { profile: { age: 30 } } };
     expect(getValue(ctx, "$$profile")).toEqual({ age: 30 });
@@ -39,13 +39,22 @@ describe("getValue", async () => {
   it("returns undefined when currentItem is absent and @ prefix is used", async () => {
     expect(getValue({}, "@value")).toBeUndefined();
   });
+
+  it("resolves a field from screenData using $ prefix", async () => {
+    const ctx = { screenData: { sport: "tennis" } };
+    expect(getValue(ctx, "$sport")).toBe("tennis");
+  });
+
+  it("returns undefined when screenData is absent and $ prefix is used", async () => {
+    expect(getValue({}, "$field")).toBeUndefined();
+  });
 });
 
 // ---------------------------------------------------------------------------
 // evaluateCondition
 // ---------------------------------------------------------------------------
 
-describe("evaluateCondition", async () => {
+describe("evaluateCondition", () => {
   const ctx = {
     data: {
       profile: { age: 25, name: "alice" },
@@ -79,6 +88,15 @@ describe("evaluateCondition", async () => {
         ctx,
       ),
     ).toBe(true);
+  });
+
+  it("neq — does not match when values are equal", async () => {
+    expect(
+      evaluateCondition(
+        { operator: "neq", dataKey: "$$profile.name", value: "alice" },
+        ctx,
+      ),
+    ).toBe(false);
   });
 
   it("lt / lte / gt / gte numeric comparisons", async () => {
@@ -147,5 +165,68 @@ describe("evaluateCondition", async () => {
         ctx,
       ),
     ).toBe(true); // "alice".length === 5
+  });
+
+  it("length-lt — true when length is below threshold", async () => {
+    expect(
+      evaluateCondition(
+        { operator: "length-lt", dataKey: "$$tags.list", value: 3 },
+        ctx,
+      ),
+    ).toBe(true); // list has 2 items
+  });
+
+  it("length-gte — true when array length equals threshold", async () => {
+    expect(
+      evaluateCondition(
+        { operator: "length-gte", dataKey: "$$tags.list", value: 2 },
+        ctx,
+      ),
+    ).toBe(true);
+  });
+
+  it("length-eq — true when string length exactly matches threshold", async () => {
+    expect(
+      evaluateCondition(
+        { operator: "length-eq", dataKey: "$$profile.name", value: 5 },
+        ctx,
+      ),
+    ).toBe(true); // "alice".length === 5
+  });
+
+  it("length-neq — true when string length does not match threshold", async () => {
+    expect(
+      evaluateCondition(
+        { operator: "length-neq", dataKey: "$$profile.name", value: 4 },
+        ctx,
+      ),
+    ).toBe(true); // "alice".length (5) !== 4
+  });
+
+  it("length-gt on undefined key treats length as 0 and returns false", async () => {
+    expect(
+      evaluateCondition(
+        { operator: "length-gt", dataKey: "$$profile.missing", value: 0 },
+        ctx,
+      ),
+    ).toBe(false);
+  });
+
+  it("contains — false when key is undefined", async () => {
+    expect(
+      evaluateCondition(
+        { operator: "contains", dataKey: "$$profile.missing", value: "x" },
+        ctx,
+      ),
+    ).toBe(false);
+  });
+
+  it("eq — uses loose equality (string '25' equals number 25)", async () => {
+    expect(
+      evaluateCondition(
+        { operator: "eq", dataKey: "$$profile.age", value: "25" },
+        ctx,
+      ),
+    ).toBe(true); // 25 == "25" via loose equality
   });
 });

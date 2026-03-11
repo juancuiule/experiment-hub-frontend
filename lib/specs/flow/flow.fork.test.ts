@@ -7,7 +7,7 @@ import { makeScreen, seq } from "../test-helpers";
 // Fork
 // ---------------------------------------------------------------------------
 
-describe("fork", async () => {
+describe("fork", () => {
   afterEach(() => vi.restoreAllMocks());
 
   const flow: ExperimentFlow = {
@@ -124,5 +124,39 @@ describe("fork", async () => {
       // no fork-edge for fork-bad.x
     };
     await expect(startExperiment(broken, "start")).rejects.toThrow();
+  });
+
+  it("treats undefined weight as 1 (equal distribution)", async () => {
+    const noWeightFlow: ExperimentFlow = {
+      nodes: [
+        { id: "start", type: "start" },
+        {
+          id: "fork-nw",
+          type: "fork",
+          props: {
+            name: "No-weight fork",
+            forks: [
+              { id: "a", name: "A" }, // no weight
+              { id: "b", name: "B" }, // no weight
+            ],
+          },
+        },
+        makeScreen("screen-a", "variant-a"),
+        makeScreen("screen-b", "variant-b"),
+      ],
+      edges: [
+        seq("start", "fork-nw"),
+        { type: "fork-edge", from: "fork-nw.a", to: "screen-a" },
+        { type: "fork-edge", from: "fork-nw.b", to: "screen-b" },
+      ],
+    };
+
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const stepA = await startExperiment(noWeightFlow, "start");
+    expect((stepA.state as any).node.id).toBe("screen-a");
+
+    vi.spyOn(Math, "random").mockReturnValue(0.999);
+    const stepB = await startExperiment(noWeightFlow, "start");
+    expect((stepB.state as any).node.id).toBe("screen-b");
   });
 });

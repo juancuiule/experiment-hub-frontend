@@ -7,7 +7,7 @@ import { makeScreen, seq } from "../test-helpers";
 // Branch
 // ---------------------------------------------------------------------------
 
-describe("branch", async () => {
+describe("branch", () => {
   const flow: ExperimentFlow = {
     nodes: [
       { id: "start", type: "start" },

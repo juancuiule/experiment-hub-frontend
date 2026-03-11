@@ -8,7 +8,7 @@ import { ExperimentFlow } from "@/lib/types";
 // Path — basic
 // ---------------------------------------------------------------------------
 
-describe("path", async () => {
+describe("path", () => {
   const flow: ExperimentFlow = {
     nodes: [
       { id: "start", type: "start" },
@@ -76,7 +76,7 @@ describe("path", async () => {
 // Path with randomized children
 // ---------------------------------------------------------------------------
 
-describe("path with randomized children", async () => {
+describe("path with randomized children", () => {
   const flow: ExperimentFlow = {
     nodes: [
       { id: "start", type: "start" },
@@ -119,7 +119,7 @@ describe("path with randomized children", async () => {
 // Path with a branch node as a child
 // ---------------------------------------------------------------------------
 
-describe("path with a branch node as a child", async () => {
+describe("path with a branch node as a child", () => {
   // The branch auto-traverses when reached inside the path, routing to a
   // screen that is NOT in the path-contains list. The path advances its step
   // counter once the routed-to screen signals "done" (no sequential edge out).
@@ -234,7 +234,7 @@ describe("path with a branch node as a child", async () => {
 // Path with a checkpoint node as a child
 // ---------------------------------------------------------------------------
 
-describe("path with a checkpoint node as a child", async () => {
+describe("path with a checkpoint node as a child", () => {
   // Checkpoint auto-traverses (records timestamp + advances via its sequential
   // edge). The sequential edge points to a screen that is NOT a path child.
   // The path step advances once that screen signals "done".
@@ -287,7 +287,7 @@ describe("path with a checkpoint node as a child", async () => {
 // Path order tracks every child type
 // ---------------------------------------------------------------------------
 
-describe("path order tracks all child node types", async () => {
+describe("path order tracks all child node types", () => {
   // path children: screen → branch → checkpoint
   const flow: ExperimentFlow = {
     nodes: [
@@ -339,7 +339,7 @@ describe("path order tracks all child node types", async () => {
 // Loop as a path child
 // ---------------------------------------------------------------------------
 
-describe("loop as a path child", async () => {
+describe("loop as a path child", () => {
   const flow: ExperimentFlow = {
     nodes: [
       { id: "start", type: "start" },

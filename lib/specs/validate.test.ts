@@ -57,12 +57,22 @@ describe("node identity", () => {
     expect(codes(flow)).toContain("missing-start");
   });
 
-  it("reports multiple-start", () => {
+  it("accepts multiple start nodes (valid multi-entry-point design)", () => {
     const flow: ExperimentFlow = {
-      nodes: [start, { ...start, id: "start2" }],
-      edges: [],
+      nodes: [
+        start,
+        { ...start, id: "start2" },
+        makeScreen("s1", "welcome"),
+        makeScreen("s2", "other"),
+      ],
+      edges: [seq("start", "s1"), seq("start2", "s2")],
+      screens: [
+        { slug: "welcome", components: [] },
+        { slug: "other", components: [] },
+      ],
     };
-    expect(codes(flow)).toContain("multiple-start");
+    expect(codes(flow)).not.toContain("multiple-start");
+    expect(codes(flow)).not.toContain("missing-start");
   });
 });
 

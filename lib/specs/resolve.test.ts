@@ -13,6 +13,16 @@ describe("resolveValuesInString", () => {
       expect(resolveValuesInString("Item @index", ctx)).toBe("Item 2");
     });
 
+    it("replaces @loopId with currentItem.loopId", () => {
+      const ctx = { currentItem: { value: "x", index: 0, loopId: "loop-sports" } };
+      expect(resolveValuesInString("Loop: @loopId", ctx)).toBe("Loop: loop-sports");
+    });
+
+    it("replaces @index when value is 0 (does not leave token)", () => {
+      const ctx = { currentItem: { value: "x", index: 0, loopId: "l" } };
+      expect(resolveValuesInString("Item @index", ctx)).toBe("Item 0");
+    });
+
     it("leaves the token as-is when currentItem is undefined", () => {
       expect(resolveValuesInString("Hello @value", {})).toBe("Hello @value");
     });
@@ -41,6 +51,11 @@ describe("resolveValuesInString", () => {
 
     it("leaves the token as-is when context.data is undefined", () => {
       expect(resolveValuesInString("$$foo.bar", {})).toBe("$$foo.bar");
+    });
+
+    it("resolves multiple distinct $$ tokens in one string", () => {
+      const ctx = { data: { a: { x: "foo" }, b: { y: "bar" } } };
+      expect(resolveValuesInString("$$a.x and $$b.y", ctx)).toBe("foo and bar");
     });
   });
 
