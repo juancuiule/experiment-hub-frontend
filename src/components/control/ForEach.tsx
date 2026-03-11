@@ -35,14 +35,15 @@ export function ForEach({
         ) || [];
   }, [context, formValues]);
 
-  console.log(items);
-
   return (
     <>
       {items.map((itemValue, index) => {
         const itemContext: Context = {
           ...context,
-          currentItem: { value: itemValue, index, loopId: "for-each" },
+          screenData: {
+            ...context.screenData,
+            foreach: { value: itemValue, index },
+          },
         };
         const indexedComponent =
           template.componentFamily === "response"
