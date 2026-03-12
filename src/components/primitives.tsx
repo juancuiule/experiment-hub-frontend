@@ -19,8 +19,11 @@ export const checkboxBase =
   "w-4 h-4 border border-gray-400 rounded-sm flex items-center justify-center flex-shrink-0 data-[state=checked]:bg-black data-[state=checked]:border-black transition-colors";
 
 export function resolveString(template: string, context: Context): string {
-  return template.replace(/(\$\$[\w.]+|@\w+)/g, (match) => {
-    const value = getValue(context, match as `$$${string}` | `@${string}`);
+  return template.replace(/(\$\$[\w.]+|@\w+|\$[\w.]+)/g, (match) => {
+    const value = getValue(
+      context,
+      match as `$$${string}` | `@${string}` | `$${string}`,
+    );
     return value != null ? String(value) : match;
   });
 }

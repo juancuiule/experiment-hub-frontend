@@ -1,12 +1,12 @@
 "use client";
 
+import { ScreenComponent } from "@/lib/components";
+import { ForEachComponent } from "@/lib/components/control";
+import { getValue } from "@/lib/conditions";
+import { Context } from "@/lib/types";
 import { Fragment, useMemo } from "react";
 import { UseFormReturn, useWatch } from "react-hook-form";
-import { ForEachComponent } from "@/lib/components/control";
-import { ScreenComponent } from "@/lib/components";
-import { Context } from "@/lib/types";
-import { RenderProps } from "../primitives";
-import { getValue } from "@/lib/conditions";
+import { RenderProps, resolveString } from "../primitives";
 
 type Props = {
   component: ForEachComponent;
@@ -51,7 +51,7 @@ export function ForEach({
                 ...template,
                 props: {
                   ...template.props,
-                  dataKey: `${template.props.dataKey}.${index}`,
+                  dataKey: resolveString(template.props.dataKey, itemContext), //`${template.props.dataKey}.${index}`,
                 },
               }
             : template;

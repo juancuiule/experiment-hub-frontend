@@ -13,7 +13,10 @@ type Props = {
 };
 
 export function Slider({ component, form, context }: Props) {
-  const { control, formState: { errors } } = form;
+  const {
+    control,
+    formState: { errors },
+  } = form;
   const { dataKey } = component.props;
   const min = component.props.min ?? 0;
   const max = component.props.max ?? 100;
@@ -27,9 +30,13 @@ export function Slider({ component, form, context }: Props) {
         return (
           <div className="my-4 flex flex-col gap-1">
             <div className="flex items-center justify-between">
-              <label className="text-sm">{resolveString(component.props.label, context)}</label>
+              <label className="text-sm">
+                {resolveString(component.props.label, context)}
+              </label>
               {component.props.showValue && (
-                <span className="text-sm font-medium tabular-nums">{value}</span>
+                <span className="text-sm font-medium tabular-nums">
+                  {value}
+                </span>
               )}
             </div>
             <div className="mt-4">
@@ -57,7 +64,9 @@ export function Slider({ component, form, context }: Props) {
                 </span>
               </div>
             )}
-            <FieldError message={errors[dataKey]?.message as string | undefined} />
+            <FieldError
+              message={errors[dataKey]?.message as string | undefined}
+            />
           </div>
         );
       }}
