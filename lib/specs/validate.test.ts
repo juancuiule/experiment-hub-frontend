@@ -169,7 +169,7 @@ describe("branch wiring", () => {
               {
                 id: "yes",
                 name: "Yes",
-                config: { operator: "eq", dataKey: "$$q.answer", value: "y" },
+                config: { type: "simple", operator: "eq", dataKey: "$$q.answer", value: "y" },
               },
             ],
           },
@@ -215,7 +215,7 @@ describe("branch wiring", () => {
               {
                 id: "yes",
                 name: "Yes",
-                config: { operator: "eq", dataKey: "$$s1.v", value: "y" },
+                config: { type: "simple", operator: "eq", dataKey: "$$s1.v", value: "y" },
               },
             ],
           },
@@ -259,12 +259,12 @@ describe("branch wiring", () => {
               {
                 id: "yes",
                 name: "Yes",
-                config: { operator: "eq", dataKey: "$$s1.v", value: "y" },
+                config: { type: "simple", operator: "eq", dataKey: "$$s1.v", value: "y" },
               },
               {
                 id: "maybe",
                 name: "Maybe",
-                config: { operator: "eq", dataKey: "$$s1.v", value: "m" },
+                config: { type: "simple", operator: "eq", dataKey: "$$s1.v", value: "m" },
               },
             ],
           },
@@ -312,7 +312,7 @@ describe("branch wiring", () => {
               {
                 id: "yes",
                 name: "Yes",
-                config: { operator: "eq", dataKey: "$$s1.v", value: "y" },
+                config: { type: "simple", operator: "eq", dataKey: "$$s1.v", value: "y" },
               },
             ],
           },
@@ -727,6 +727,7 @@ describe("$$ reference checks", () => {
                 id: "yes",
                 name: "Yes",
                 config: {
+                  type: "simple",
                   operator: "eq",
                   dataKey: "$$before.answer",
                   value: "y",
@@ -800,6 +801,7 @@ describe("$$ reference checks", () => {
                 id: "yes",
                 name: "Yes",
                 config: {
+                  type: "simple",
                   operator: "eq",
                   dataKey: "$$before.answer",
                   value: "y",
@@ -870,6 +872,7 @@ describe("condition reference checks", () => {
                 id: "yes",
                 name: "Yes",
                 config: {
+                  type: "simple",
                   operator: "eq",
                   dataKey: "$$welcome.answer",
                   value: "y",
@@ -920,6 +923,7 @@ describe("condition reference checks", () => {
                 id: "yes",
                 name: "Yes",
                 config: {
+                  type: "simple",
                   operator: "eq",
                   dataKey: "$$future.answer",
                   value: "y",
@@ -957,7 +961,7 @@ describe("condition reference checks", () => {
               {
                 id: "yes",
                 name: "Yes",
-                config: { operator: "eq", dataKey: "@value", value: "y" },
+                config: { type: "simple", operator: "eq", dataKey: "@value", value: "y" },
               },
             ],
           },

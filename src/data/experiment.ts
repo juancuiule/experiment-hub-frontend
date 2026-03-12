@@ -364,6 +364,7 @@ export const experiment: ExperimentFlow = {
             id: "consumed",
             name: "Consumed psychedelics",
             config: {
+              type: "simple",
               operator: "length-gte",
               dataKey: "$$psychodelics.psychedelics",
               value: 1,
@@ -373,6 +374,7 @@ export const experiment: ExperimentFlow = {
             id: "not-consumed",
             name: "Did not consume psychedelics",
             config: {
+              type: "simple",
               operator: "length-lt",
               dataKey: "$$psychodelics.psychedelics",
               value: 1,
@@ -451,6 +453,7 @@ export const experiment: ExperimentFlow = {
               props: { text: "Comenzar" },
             },
             if: {
+              type: "simple",
               operator: "eq",
               dataKey: "$consent",
               value: true,
@@ -616,6 +619,7 @@ export const experiment: ExperimentFlow = {
               props: { text: "No consumí" },
             },
             if: {
+              type: "simple",
               operator: "length-lt",
               dataKey: "$psychedelics",
               value: 1,
@@ -698,6 +702,7 @@ export const experiment: ExperimentFlow = {
               },
             },
             if: {
+              type: "simple",
               operator: "lt",
               dataKey: "$psychedelic-consumption-change",
               value: 50,

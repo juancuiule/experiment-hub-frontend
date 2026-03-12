@@ -1,5 +1,5 @@
 import { BaseComponent, ScreenComponent } from ".";
-import { ConditionConfig } from "../conditions";
+import { Condition } from "../conditions";
 
 export interface BaseControlComponent<
   U extends string,
@@ -11,7 +11,7 @@ export interface BaseControlComponent<
 export interface ConditionalComponent extends BaseControlComponent<
   "conditional",
   {
-    if: ConditionConfig;
+    if: Condition;
     component: ScreenComponent;
     else?: ScreenComponent;
   }

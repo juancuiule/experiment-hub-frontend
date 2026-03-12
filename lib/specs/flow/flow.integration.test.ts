@@ -45,12 +45,12 @@ const complexFlow: ExperimentFlow = {
           {
             id: "minor",
             name: "Minor",
-            config: { operator: "lt", value: 18, dataKey: "$$profile.age" },
+            config: { type: "simple", operator: "lt", value: 18, dataKey: "$$profile.age" },
           },
           {
             id: "adult",
             name: "Adult",
-            config: { operator: "gte", value: 18, dataKey: "$$profile.age" },
+            config: { type: "simple", operator: "gte", value: 18, dataKey: "$$profile.age" },
           },
         ],
       },
@@ -300,7 +300,7 @@ describe("error cases", () => {
               {
                 id: "adult",
                 name: "Adult",
-                config: { operator: "gte", value: 18, dataKey: "$$age.age" },
+                config: { type: "simple", operator: "gte", value: 18, dataKey: "$$age.age" },
               },
             ],
           },

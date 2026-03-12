@@ -1,4 +1,4 @@
-import { ConditionConfig } from "./conditions";
+import { Condition } from "./conditions";
 
 interface BaseNode {
   id: string;
@@ -31,7 +31,7 @@ export type Branch = {
   id: string;
   name: string;
   description?: string;
-  config: ConditionConfig;
+  config: Condition;
 };
 
 export interface BranchNode extends BaseNode {

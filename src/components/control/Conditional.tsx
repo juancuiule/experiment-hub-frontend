@@ -24,7 +24,7 @@ export function Conditional({
 }: Props) {
   const formValues = useWatch({ control: form.control });
   const {
-    if: { operator, dataKey, value },
+    if: condition,
     component: innerComponent,
     else: elseComponent,
   } = component.props;
@@ -33,10 +33,7 @@ export function Conditional({
     ...context,
     screenData: formValues as Record<string, any>,
   };
-  const shouldRender = evaluateCondition(
-    { operator, dataKey, value },
-    enrichedContext,
-  );
+  const shouldRender = evaluateCondition(condition, enrichedContext);
 
   if (!shouldRender) {
     if (!elseComponent) return null;

@@ -5,11 +5,20 @@ export type BaseOperator = "lt" | "lte" | "gt" | "gte" | "eq" | "neq";
 export type ArrayOperator = "contains" | `length-${BaseOperator}`;
 
 export type Operator = BaseOperator | ArrayOperator;
-export type ConditionConfig = {
+
+export type SimpleCondition = {
+  type: "simple";
   operator: Operator;
   dataKey: `$$${string}` | `@${string}` | `$${string}`;
   value: string | number | boolean;
 };
+
+export type CompoundCondition =
+  | { type: "and"; conditions: Condition[] }
+  | { type: "or"; conditions: Condition[] }
+  | { type: "not"; condition: Condition };
+
+export type Condition = SimpleCondition | CompoundCondition;
 
 function evaluateBaseOperator(op: BaseOperator, a: any, b: any): boolean {
   switch (op) {
@@ -70,27 +79,42 @@ export function getValue(
 }
 
 export function evaluateCondition(
-  config: ConditionConfig,
+  condition: Condition,
   context: Context,
 ): boolean {
-  const key = config.dataKey;
-  const value = getValue(context, key);
+  if (condition.type === "simple") {
+    const value = getValue(context, condition.dataKey);
 
-  if (config.operator === "contains") {
-    return Array.isArray(value) && value.includes(config.value);
+    if (condition.operator === "contains") {
+      return Array.isArray(value) && value.includes(condition.value);
+    }
+
+    if (condition.operator.startsWith("length-")) {
+      const op = condition.operator.slice("length-".length) as BaseOperator;
+      const len = Array.isArray(value)
+        ? value.length
+        : String(value ?? "").length;
+      return evaluateBaseOperator(op, len, Number(condition.value));
+    }
+
+    if (isBaseOperator(condition.operator)) {
+      if (value === undefined) return false;
+      return evaluateBaseOperator(condition.operator, value, condition.value);
+    }
+
+    return false;
   }
 
-  if (config.operator.startsWith("length-")) {
-    const op = config.operator.slice("length-".length) as BaseOperator;
-    const len = Array.isArray(value)
-      ? value.length
-      : String(value ?? "").length;
-    return evaluateBaseOperator(op, len, Number(config.value));
+  if (condition.type === "and") {
+    return condition.conditions.every((c) => evaluateCondition(c, context));
   }
 
-  if (isBaseOperator(config.operator)) {
-    if (value === undefined) return false;
-    return evaluateBaseOperator(config.operator, value, config.value);
+  if (condition.type === "or") {
+    return condition.conditions.some((c) => evaluateCondition(c, context));
+  }
+
+  if (condition.type === "not") {
+    return !evaluateCondition(condition.condition, context);
   }
 
   return false;

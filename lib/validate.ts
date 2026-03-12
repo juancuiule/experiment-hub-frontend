@@ -1,6 +1,43 @@
+import { Condition } from "./conditions";
 import { ExperimentFlow } from "./types";
 
 export type ValidationError = { code: string; message: string };
+
+// ---------------------------------------------------------------------------
+// Condition helpers
+// ---------------------------------------------------------------------------
+
+function validateConditionStructure(
+  cond: Condition,
+  context: string,
+): ValidationError[] {
+  const errors: ValidationError[] = [];
+
+  if (cond.type === "and" || cond.type === "or") {
+    if (cond.conditions.length === 0) {
+      errors.push({
+        code: `condition-empty-${cond.type}`,
+        message: `${context} has an "${cond.type}" condition with no children`,
+      });
+    }
+    for (const child of cond.conditions) {
+      errors.push(...validateConditionStructure(child, context));
+    }
+  } else if (cond.type === "not") {
+    errors.push(...validateConditionStructure(cond.condition, context));
+  }
+
+  return errors;
+}
+
+function collectConditionDataKeys(cond: Condition): string[] {
+  if (cond.type === "simple") return [cond.dataKey];
+  if (cond.type === "and" || cond.type === "or") {
+    return cond.conditions.flatMap(collectConditionDataKeys);
+  }
+  if (cond.type === "not") return collectConditionDataKeys(cond.condition);
+  return [];
+}
 
 // ---------------------------------------------------------------------------
 // 1. Node identity
@@ -114,6 +151,12 @@ function checkEdgeWiring(flow: ExperimentFlow): ValidationError[] {
               message: `Branch "${node.id}" has condition "${branch.id}" with no corresponding branch-condition edge`,
             });
           }
+          errors.push(
+            ...validateConditionStructure(
+              branch.config,
+              `Branch "${node.id}" condition "${branch.id}"`,
+            ),
+          );
         }
         break;
       }
@@ -435,12 +478,14 @@ function checkReferences(flow: ExperimentFlow): ValidationError[] {
 
       case "branch": {
         for (const branch of node.props.branches) {
-          checkText(
-            branch.config.dataKey,
-            `Branch "${node.id}" condition`,
-            current,
-            insideLoop,
-          );
+          for (const dataKey of collectConditionDataKeys(branch.config)) {
+            checkText(
+              dataKey,
+              `Branch "${node.id}" condition`,
+              current,
+              insideLoop,
+            );
+          }
         }
         // Walk each target in isolation — data written in one branch is not
         // guaranteed to be available in another.

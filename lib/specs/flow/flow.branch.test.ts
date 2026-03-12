@@ -22,6 +22,7 @@ describe("branch", () => {
               id: "minor",
               name: "Minor",
               config: {
+                type: "simple",
                 operator: "lt",
                 value: 18,
                 dataKey: "$$age-screen.age",
@@ -31,6 +32,7 @@ describe("branch", () => {
               id: "adult",
               name: "Adult",
               config: {
+                type: "simple",
                 operator: "gte",
                 value: 18,
                 dataKey: "$$age-screen.age",

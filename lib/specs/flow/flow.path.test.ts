@@ -138,6 +138,7 @@ describe("path with a branch node as a child", () => {
               id: "beginner",
               name: "Beginner",
               config: {
+                type: "simple",
                 operator: "eq",
                 value: "beginner",
                 dataKey: "$$path-quiz.intro.level",
@@ -147,6 +148,7 @@ describe("path with a branch node as a child", () => {
               id: "expert",
               name: "Expert",
               config: {
+                type: "simple",
                 operator: "eq",
                 value: "expert",
                 dataKey: "$$path-quiz.intro.level",
@@ -303,7 +305,7 @@ describe("path order tracks all child node types", () => {
             {
               id: "easy",
               name: "Easy",
-              config: { operator: "eq", value: "easy", dataKey: "$$path-all.q1.level" },
+              config: { type: "simple", operator: "eq", value: "easy", dataKey: "$$path-all.q1.level" },
             },
           ],
         },
