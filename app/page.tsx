@@ -1,4 +1,5 @@
 import { ExperimentFlow } from "@/lib/types";
+import { validateExperiment } from "@/lib/validate";
 import { experiment } from "@/src/data/experiment";
 import Experiment from "@/src/Experiment";
 
@@ -42,7 +43,25 @@ export default async function Home(props: Props) {
   const searchParams = await props.searchParams;
   const startingNode = determineStartingNode(searchParams, experiment);
 
+  const errors = validateExperiment(experiment);
+
   console.log(startingNode);
+  console.log(errors);
+
+  if (errors.length > 0) {
+    return (
+      <div>
+        <h1>Experiment Validation Errors</h1>
+        <ul>
+          {errors.map((error, index) => (
+            <li key={index}>
+              {error.code} - {error.message}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
 
   return <Experiment startingNode={startingNode} />;
 }
