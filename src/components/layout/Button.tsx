@@ -10,7 +10,12 @@ type Props = {
 
 export function Button({ component, isLoading }: Props) {
   return (
-    <div className={twMerge("pt-3", component.props.alignBottom && "mt-auto pt-5")}>
+    <div
+      className={twMerge(
+        "pt-3",
+        component.props.alignBottom ? "mt-auto pt-5" : "",
+      )}
+    >
       <button
         type="submit"
         disabled={component.props.disabled || isLoading}

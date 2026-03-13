@@ -30,9 +30,7 @@ export function Checkboxes({ component, form, context }: Props) {
       name={dataKey}
       render={({ field }) => (
         <div className="my-4 flex flex-col gap-1">
-          <label className="text-sm">
-            {resolveString(component.props.label, context)}
-          </label>
+          <label>{resolveString(component.props.label, context)}</label>
           <div className="flex flex-col gap-2 mt-2">
             {component.props.options.map((opt) => {
               const checked =
@@ -58,12 +56,7 @@ export function Checkboxes({ component, form, context }: Props) {
                       <CheckIcon />
                     </CheckboxPrimitive.Indicator>
                   </CheckboxPrimitive.Root>
-                  <label
-                    className="text-sm"
-                    htmlFor={`${dataKey}-${opt.value}`}
-                  >
-                    {opt.label}
-                  </label>
+                  <label htmlFor={`${dataKey}-${opt.value}`}>{opt.label}</label>
                 </div>
               );
             })}

@@ -75,10 +75,11 @@ export default function Experiment(props: Props) {
         ) : (
           <p className="text-red-500">Screen not found: {slug}</p>
         )}
-        <div className="h-2 w-full bg-gray-100 my-6"></div>
-        <pre className="font-mono text-xs">
-          <code>{JSON.stringify(step, null, 2)}</code>
-        </pre>
+        <div className="absolute w-[calc(100vw-512px)] h-[80svh] overflow-y-scroll right-0 top-0 p-2">
+          <pre className="font-mono text-xs">
+            <code className="text-wrap">{JSON.stringify(step, null, 2)}</code>
+          </pre>
+        </div>
       </>
     );
   }

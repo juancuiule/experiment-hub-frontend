@@ -10,6 +10,7 @@ import {
   FieldError,
   resolveString,
 } from "../primitives";
+import { twMerge } from "tailwind-merge";
 
 type Props = {
   component: SingleCheckboxComponent;
@@ -35,13 +36,13 @@ export function SingleCheckbox({ component, form, context }: Props) {
               id={`${dataKey}`}
               checked={field.value}
               onCheckedChange={field.onChange}
-              className={checkboxBase}
+              className={twMerge(checkboxBase, "translate-y-0.5")}
             >
               <CheckboxPrimitive.Indicator>
                 <CheckIcon />
               </CheckboxPrimitive.Indicator>
             </CheckboxPrimitive.Root>
-            <label className="text-sm leading-tight" htmlFor={`${dataKey}`}>
+            <label className="leading-tight" htmlFor={`${dataKey}`}>
               {resolveString(component.props.label, context)}
             </label>
           </div>

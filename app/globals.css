@@ -16,3 +16,9 @@
 :root {
   scroll-behavior: smooth;
 }
+
+.debug {
+  * {
+    outline: 1px solid red;
+  }
+}

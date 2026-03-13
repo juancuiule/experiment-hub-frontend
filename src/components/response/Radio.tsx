@@ -25,9 +25,7 @@ export function Radio({ component, form, context }: Props) {
       name={dataKey}
       render={({ field }) => (
         <div className="my-4 flex flex-col gap-1">
-          <label className="text-sm">
-            {resolveString(component.props.label, context)}
-          </label>
+          <label>{resolveString(component.props.label, context)}</label>
           <RadioGroupPrimitive.Root
             value={field.value}
             onValueChange={field.onChange}
@@ -42,9 +40,7 @@ export function Radio({ component, form, context }: Props) {
                 >
                   <RadioGroupPrimitive.Indicator className="w-2 h-2 rounded-full bg-black" />
                 </RadioGroupPrimitive.Item>
-                <label className="text-sm" htmlFor={`${dataKey}-${opt.value}`}>
-                  {opt.label}
-                </label>
+                <label htmlFor={`${dataKey}-${opt.value}`}>{opt.label}</label>
               </div>
             ))}
           </RadioGroupPrimitive.Root>

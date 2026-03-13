@@ -450,7 +450,7 @@ export const experiment: ExperimentFlow = {
             component: {
               componentFamily: "layout",
               template: "button",
-              props: { text: "Comenzar" },
+              props: { text: "Comenzar", alignBottom: true },
             },
             if: {
               type: "simple",
@@ -461,7 +461,7 @@ export const experiment: ExperimentFlow = {
             else: {
               componentFamily: "layout",
               template: "button",
-              props: { text: "Comenzar", disabled: true },
+              props: { text: "Comenzar", alignBottom: true, disabled: true },
             },
           },
         },

@@ -13,7 +13,10 @@ type Props = {
 };
 
 export function Dropdown({ component, form, context }: Props) {
-  const { control, formState: { errors } } = form;
+  const {
+    control,
+    formState: { errors },
+  } = form;
   const { dataKey } = component.props;
 
   return (
@@ -22,8 +25,11 @@ export function Dropdown({ component, form, context }: Props) {
       name={dataKey}
       render={({ field }) => (
         <div className="my-4 flex flex-col gap-1">
-          <label className="text-sm">{resolveString(component.props.label, context)}</label>
-          <SelectPrimitive.Root value={field.value} onValueChange={field.onChange}>
+          <label>{resolveString(component.props.label, context)}</label>
+          <SelectPrimitive.Root
+            value={field.value}
+            onValueChange={field.onChange}
+          >
             <SelectPrimitive.Trigger className="flex items-center justify-between border-b border-gray-300 pb-1 pt-1 w-full outline-none focus:border-black transition-colors data-[placeholder]:text-gray-300 text-sm">
               <SelectPrimitive.Value placeholder="Select one" />
               <SelectPrimitive.Icon>
@@ -39,14 +45,18 @@ export function Dropdown({ component, form, context }: Props) {
                       value={opt.value}
                       className="flex items-center px-3 py-2 text-sm cursor-pointer outline-none data-[highlighted]:bg-gray-100 rounded-sm"
                     >
-                      <SelectPrimitive.ItemText>{opt.label}</SelectPrimitive.ItemText>
+                      <SelectPrimitive.ItemText>
+                        {opt.label}
+                      </SelectPrimitive.ItemText>
                     </SelectPrimitive.Item>
                   ))}
                 </SelectPrimitive.Viewport>
               </SelectPrimitive.Content>
             </SelectPrimitive.Portal>
           </SelectPrimitive.Root>
-          <FieldError message={errors[dataKey]?.message as string | undefined} />
+          <FieldError
+            message={errors[dataKey]?.message as string | undefined}
+          />
         </div>
       )}
     />

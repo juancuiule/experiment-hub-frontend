@@ -65,21 +65,32 @@ export function Screen({ screen, isLoading, onNext, context }: ScreenProps) {
     );
   };
 
+  const values = form.watch();
+
   return (
     <form
-      className="mt-5 h-full flex-1 flex flex-col"
+      className="h-full flex-1 flex flex-col"
       key={screen.slug}
       onSubmit={form.handleSubmit(onSubmit)}
     >
       {screen.components.map((component, i) => (
         <RenderComponent
-          key={component.componentFamily === "response" ? component.props.dataKey : i}
+          key={
+            component.componentFamily === "response"
+              ? component.props.dataKey
+              : i
+          }
           component={component}
           form={form}
           context={context}
           isLoading={isLoading}
         />
       ))}
+      <div className="absolute w-[calc(100vw-512px)] h-[20svh] overflow-y-scroll right-0 top-[80svh] p-2 bg-gray-100">
+        <pre className="text-xs">
+          <code>{JSON.stringify(values, null, 2)}</code>
+        </pre>
+      </div>
     </form>
   );
 }

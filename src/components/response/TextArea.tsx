@@ -13,12 +13,15 @@ type Props = {
 };
 
 export function TextArea({ component, form, context }: Props) {
-  const { register, formState: { errors } } = form;
+  const {
+    register,
+    formState: { errors },
+  } = form;
   const { dataKey } = component.props;
 
   return (
     <div className="my-4 flex flex-col gap-1">
-      <label className="text-sm">{resolveString(component.props.label, context)}</label>
+      <label>{resolveString(component.props.label, context)}</label>
       <textarea
         {...register(dataKey)}
         rows={component.props.lines ?? 4}

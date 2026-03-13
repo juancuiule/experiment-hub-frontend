@@ -30,9 +30,7 @@ export function Slider({ component, form, context }: Props) {
         return (
           <div className="my-4 flex flex-col gap-1">
             <div className="flex items-center justify-between">
-              <label className="text-sm">
-                {resolveString(component.props.label, context)}
-              </label>
+              <label>{resolveString(component.props.label, context)}</label>
               {component.props.showValue && (
                 <span className="text-sm font-medium tabular-nums">
                   {value}

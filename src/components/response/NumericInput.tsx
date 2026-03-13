@@ -12,12 +12,15 @@ type Props = {
 };
 
 export function NumericInput({ component, form, context }: Props) {
-  const { register, formState: { errors } } = form;
+  const {
+    register,
+    formState: { errors },
+  } = form;
   const { dataKey } = component.props;
 
   return (
     <div className="my-4 flex flex-col gap-1">
-      <label className="text-sm">{resolveString(component.props.label, context)}</label>
+      <label>{resolveString(component.props.label, context)}</label>
       <input
         {...register(dataKey, { valueAsNumber: true })}
         type="number"

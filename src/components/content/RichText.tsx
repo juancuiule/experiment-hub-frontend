@@ -11,56 +11,55 @@ type Props = {
 };
 
 export function RichText({ component, context }: Props) {
+  const { content } = component.props;
   return (
-    <div className="my-3">
-      <Markdown
-        components={{
-          h1: ({ node, ...props }) => (
-            <h1 {...props} className="text-5xl font-bold mb-4" />
-          ),
-          h2: ({ node, ...props }) => (
-            <h2 {...props} className="text-3xl font-bold mb-3" />
-          ),
-          h3: ({ node, ...props }) => (
-            <h3 {...props} className="text-xl font-bold mb-2" />
-          ),
-          p: ({ node, ...props }) => (
-            <p {...props} className="text-black mb-2" />
-          ),
-          a: ({ node, ...props }) => (
-            <a {...props} className="text-info underline" />
-          ),
-          strong: ({ node, ...props }) => (
-            <strong {...props} className="font-bold" />
-          ),
-          ul: ({ node, ...props }) => (
-            <ul {...props} className="list-disc list-inside mb-2" />
-          ),
-          ol: ({ node, ...props }) => (
-            <ol {...props} className="list-decimal list-inside mb-2" />
-          ),
-          blockquote: ({ node, ...props }) => (
-            <blockquote
-              {...props}
-              className="border-l-4 border-gray-300 pl-4 text-gray-500"
-            />
-          ),
-          code: ({ node, ...props }) => (
-            <code
-              {...props}
-              className="bg-gray-100 text-gray-800 rounded p-1 text-sm whitespace-break-spaces"
-            />
-          ),
-          pre: ({ node, ...props }) => (
-            <pre
-              {...props}
-              className="bg-gray-100 text-gray-800 rounded text-sm [&>code]:block [&>code]:bg-transparent"
-            />
-          ),
-        }}
-      >
-        {resolveString(component.props.content, context)}
-      </Markdown>
-    </div>
+    <Markdown
+      components={{
+        h1: ({ node, ...props }) => (
+          <h1 {...props} className="text-5xl font-bold mb-4" />
+        ),
+        h2: ({ node, ...props }) => (
+          <h2 {...props} className="text-3xl font-bold mb-3" />
+        ),
+        h3: ({ node, ...props }) => (
+          <h3 {...props} className="text-xl font-bold mb-2" />
+        ),
+        p: ({ node, ...props }) => (
+          <p {...props} className="text-black mb-[1lh]" />
+        ),
+        a: ({ node, ...props }) => (
+          <a {...props} className="text-info underline" />
+        ),
+        strong: ({ node, ...props }) => (
+          <strong {...props} className="font-bold" />
+        ),
+        ul: ({ node, ...props }) => (
+          <ul {...props} className="list-disc list-inside mb-2" />
+        ),
+        ol: ({ node, ...props }) => (
+          <ol {...props} className="list-decimal list-inside mb-2" />
+        ),
+        blockquote: ({ node, ...props }) => (
+          <blockquote
+            {...props}
+            className="border-l-4 border-gray-300 pl-4 text-gray-500"
+          />
+        ),
+        code: ({ node, ...props }) => (
+          <code
+            {...props}
+            className="bg-gray-100 text-gray-800 rounded p-1 text-sm whitespace-break-spaces"
+          />
+        ),
+        pre: ({ node, ...props }) => (
+          <pre
+            {...props}
+            className="bg-gray-100 text-gray-800 rounded text-sm [&>code]:block [&>code]:bg-transparent"
+          />
+        ),
+      }}
+    >
+      {resolveString(content, context)}
+    </Markdown>
   );
 }

@@ -16,7 +16,7 @@ export const inputBase =
   "border-b border-gray-300 pb-1 pt-1 outline-none bg-transparent w-full placeholder:text-gray-300 focus:border-black transition-colors text-sm";
 
 export const checkboxBase =
-  "w-4 h-4 border border-gray-400 rounded-sm flex items-center justify-center flex-shrink-0 data-[state=checked]:bg-black data-[state=checked]:border-black transition-colors";
+  "size-4 border border-gray-400 rounded-sm flex items-center justify-center flex-shrink-0 data-[state=checked]:bg-black data-[state=checked]:border-black transition-colors";
 
 export function resolveString(template: string, context: Context): string {
   return template.replace(/(\$\$[\w.]+|@\w+|\$[\w.]+)/g, (match) => {

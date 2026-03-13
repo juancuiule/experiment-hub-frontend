@@ -13,7 +13,10 @@ type Props = {
 };
 
 export function LikertScale({ component, form, context }: Props) {
-  const { control, formState: { errors } } = form;
+  const {
+    control,
+    formState: { errors },
+  } = form;
   const { dataKey } = component.props;
 
   return (
@@ -22,7 +25,7 @@ export function LikertScale({ component, form, context }: Props) {
       name={dataKey}
       render={({ field }) => (
         <div className="my-4 flex flex-col gap-1">
-          <label className="text-sm">{resolveString(component.props.label, context)}</label>
+          <label>{resolveString(component.props.label, context)}</label>
           <div className="mt-3">
             <div className="flex items-center justify-between gap-1">
               {component.props.options.map((opt) => {
@@ -50,15 +53,25 @@ export function LikertScale({ component, form, context }: Props) {
                   key={opt.value}
                   className={twMerge(
                     "flex-1 flex justify-center",
-                    i === 0 ? "justify-start" : i === list.length - 1 ? "justify-end" : "justify-center",
+                    i === 0
+                      ? "justify-start"
+                      : i === list.length - 1
+                        ? "justify-end"
+                        : "justify-center",
                   )}
                 >
                   {opt.label && (
                     <span
                       className={twMerge(
                         "text-xs text-center",
-                        i === 0 ? "text-left" : i === list.length - 1 ? "text-right" : "",
-                        field.value === opt.value ? "font-medium text-black" : "text-gray-400",
+                        i === 0
+                          ? "text-left"
+                          : i === list.length - 1
+                            ? "text-right"
+                            : "",
+                        field.value === opt.value
+                          ? "font-medium text-black"
+                          : "text-gray-400",
                       )}
                     >
                       {opt.label}
@@ -68,7 +81,9 @@ export function LikertScale({ component, form, context }: Props) {
               ))}
             </div>
           </div>
-          <FieldError message={errors[dataKey]?.message as string | undefined} />
+          <FieldError
+            message={errors[dataKey]?.message as string | undefined}
+          />
         </div>
       )}
     />

@@ -24,24 +24,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en light">
+    <html lang="en">
       <body
         className={twMerge(
           montserrat.variable,
           overpassMono.variable,
-          "antialiased",
+          "antialiased h-svh",
         )}
       >
-        <div className="flex min-h-screen items-center justify-center">
-          <main className="w-full max-w-lg min-h-svh outline p-6 flex flex-col">
-            <nav className="flex flex-row items-center justify-center py-2">
+        <div className="flex min-h-screen items-center justify-start relative">
+          <main className="w-full max-w-lg h-svh overflow-y-scroll outline p-6 flex flex-col">
+            <nav className="flex flex-row items-center justify-center">
               <img
                 src="https://avatars.githubusercontent.com/u/132835276?s=200&v=4"
                 className="h-12 w-auto"
                 alt="Experiment Hub logo with text"
               />
             </nav>
-            {children}
+            <div className="flex-1 flex flex-col pt-3">{children}</div>
           </main>
         </div>
       </body>
