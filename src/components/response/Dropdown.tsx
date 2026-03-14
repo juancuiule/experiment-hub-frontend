@@ -4,7 +4,7 @@ import * as SelectPrimitive from "@radix-ui/react-select";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { DropdownComponent } from "@/lib/components/response";
 import { Context } from "@/lib/types";
-import { ChevronDownIcon, FieldError, resolveString } from "../primitives";
+import { ChevronDownIcon, FieldError, resolveOptions, resolveString } from "../primitives";
 
 type Props = {
   component: DropdownComponent;
@@ -39,7 +39,7 @@ export function Dropdown({ component, form, context }: Props) {
             <SelectPrimitive.Portal>
               <SelectPrimitive.Content className="bg-white border border-gray-200 shadow-md rounded-sm z-50 overflow-hidden">
                 <SelectPrimitive.Viewport className="p-1">
-                  {component.props.options.map((opt) => (
+                  {resolveOptions(component.props.options, context).map((opt) => (
                     <SelectPrimitive.Item
                       key={opt.value}
                       value={opt.value}

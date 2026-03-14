@@ -85,11 +85,17 @@ export type Option = {
   value: string;
 };
 
+export type OptionsSource =
+  | Option[]
+  | `$$${string}`
+  | `@${string}`
+  | `$${string}`;
+
 export interface DropdownComponent extends BaseResponseComponent<
   "dropdown",
   {
     label: string;
-    options: Option[];
+    options: OptionsSource;
     randomize?: boolean;
   }
 > {}
@@ -98,7 +104,7 @@ export interface RadioComponent extends BaseResponseComponent<
   "radio",
   {
     label: string;
-    options: Option[];
+    options: OptionsSource;
     randomize?: boolean;
   }
 > {}
@@ -107,7 +113,7 @@ export interface CheckboxesComponent extends BaseResponseComponent<
   "checkboxes",
   {
     label: string;
-    options: Option[];
+    options: OptionsSource;
     min?: number;
     max?: number;
     randomize?: boolean;

@@ -8,6 +8,7 @@ import {
   CheckIcon,
   checkboxBase,
   FieldError,
+  resolveOptions,
   resolveString,
 } from "../primitives";
 
@@ -32,7 +33,7 @@ export function Checkboxes({ component, form, context }: Props) {
         <div className="my-4 flex flex-col gap-1">
           <label>{resolveString(component.props.label, context)}</label>
           <div className="flex flex-col gap-2 mt-2">
-            {component.props.options.map((opt) => {
+            {resolveOptions(component.props.options, context).map((opt) => {
               const checked =
                 Array.isArray(field.value) && field.value.includes(opt.value);
               return (
@@ -56,7 +57,12 @@ export function Checkboxes({ component, form, context }: Props) {
                       <CheckIcon />
                     </CheckboxPrimitive.Indicator>
                   </CheckboxPrimitive.Root>
-                  <label htmlFor={`${dataKey}-${opt.value}`}>{opt.label}</label>
+                  <label
+                    className="text-sm"
+                    htmlFor={`${dataKey}-${opt.value}`}
+                  >
+                    {opt.label}
+                  </label>
                 </div>
               );
             })}

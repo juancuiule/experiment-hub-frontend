@@ -7,6 +7,7 @@ import { Context } from "@/lib/types";
 import { Fragment, useMemo } from "react";
 import { UseFormReturn, useWatch } from "react-hook-form";
 import { RenderProps, resolveString } from "../primitives";
+import { deepMerge } from "@/lib/flow";
 
 type Props = {
   component: ForEachComponent;
@@ -29,37 +30,20 @@ export function ForEach({
   const items: string[] = useMemo(() => {
     return component.props.type === "static"
       ? component.props.values
-      : getValue(
-          { ...context, screenData: formValues as Record<string, any> },
-          component.props.dataKey,
-        ) || [];
+      : getValue(context, component.props.dataKey) || [];
   }, [context, formValues]);
 
   return (
     <>
       {items.map((itemValue, index) => {
-        const itemContext: Context = {
-          ...context,
-          screenData: {
-            ...context.screenData,
-            foreach: { value: itemValue, index },
-          },
-        };
-        const indexedComponent =
-          template.componentFamily === "response"
-            ? {
-                ...template,
-                props: {
-                  ...template.props,
-                  dataKey: resolveString(template.props.dataKey, itemContext), //`${template.props.dataKey}.${index}`,
-                },
-              }
-            : template;
+        const itemContext: Context = deepMerge(context, {
+          screenData: { foreach: { value: itemValue, index } },
+        });
 
         return (
           <Fragment key={index}>
             {renderChild({
-              component: indexedComponent as ScreenComponent,
+              component: template,
               form,
               context: itemContext,
               isLoading,

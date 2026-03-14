@@ -247,7 +247,7 @@ result: {
 }
 */
 // Arrays are replaced wholesale, not recursively merged.
-function deepMerge(target: any, source: any): any {
+export function deepMerge(target: any, source: any): any {
   const result = { ...target };
   for (const key of Object.keys(source)) {
     const val = source[key];

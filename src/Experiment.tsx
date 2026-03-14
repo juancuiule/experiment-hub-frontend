@@ -4,6 +4,7 @@ import { getActiveState } from "@/lib/flow";
 import { Screen } from "@/src/Screen";
 import Stepper from "@/src/Stepper";
 import { useExperimentStore } from "@/src/data/store";
+import { useEffect } from "react";
 
 type Props = {
   startingNode?: string;
@@ -12,6 +13,13 @@ type Props = {
 export default function Experiment(props: Props) {
   const { startingNode } = props;
   const { step, isLoading, start, next } = useExperimentStore();
+
+  console.log("Algo", step);
+  useEffect(() => {
+    if (!step) {
+      start(startingNode);
+    }
+  }, [step]);
 
   if (!step) {
     return (

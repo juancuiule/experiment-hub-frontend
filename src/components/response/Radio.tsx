@@ -4,7 +4,7 @@ import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { RadioComponent } from "@/lib/components/response";
 import { Context } from "@/lib/types";
-import { FieldError, resolveString } from "../primitives";
+import { FieldError, resolveOptions, resolveString } from "../primitives";
 
 type Props = {
   component: RadioComponent;
@@ -31,7 +31,7 @@ export function Radio({ component, form, context }: Props) {
             onValueChange={field.onChange}
             className="flex flex-col gap-2 mt-2"
           >
-            {component.props.options.map((opt) => (
+            {resolveOptions(component.props.options, context).map((opt) => (
               <div key={opt.value} className="flex items-center gap-2">
                 <RadioGroupPrimitive.Item
                   id={`${dataKey}-${opt.value}`}
@@ -40,7 +40,9 @@ export function Radio({ component, form, context }: Props) {
                 >
                   <RadioGroupPrimitive.Indicator className="w-2 h-2 rounded-full bg-black" />
                 </RadioGroupPrimitive.Item>
-                <label htmlFor={`${dataKey}-${opt.value}`}>{opt.label}</label>
+                <label className="text-sm" htmlFor={`${dataKey}-${opt.value}`}>
+                  {opt.label}
+                </label>
               </div>
             ))}
           </RadioGroupPrimitive.Root>

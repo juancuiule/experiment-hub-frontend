@@ -19,15 +19,19 @@ import { Slider } from "./response/Slider";
 import { TextArea } from "./response/TextArea";
 import { TextInput } from "./response/TextInput";
 import { TimeInput } from "./response/TimeInput";
-import { RenderProps } from "./primitives";
+import { RenderProps, resolveString } from "./primitives";
+import { deepMerge } from "@/lib/flow";
 
 export function RenderComponent({
   component,
   form,
-  context,
+  context: propContext,
   isLoading,
 }: RenderProps) {
   const renderChild = (props: RenderProps) => <RenderComponent {...props} />;
+
+  const screenData = form.watch(); // Watch all form values to have them available in context
+  const context = deepMerge(propContext, { screenData }); // Add form values to context for easier access in components
 
   switch (component.componentFamily) {
     case "content":
@@ -44,50 +48,98 @@ export function RenderComponent({
       break;
 
     case "response":
+      const dataKey = resolveString(component.props.dataKey, context);
+      const componentWithResolvedDataKey = deepMerge(component, {
+        props: { dataKey },
+      });
       switch (component.template) {
         case "text-input":
           return (
-            <TextInput component={component} form={form} context={context} />
+            <TextInput
+              component={componentWithResolvedDataKey}
+              form={form}
+              context={context}
+            />
           );
         case "text-area":
           return (
-            <TextArea component={component} form={form} context={context} />
+            <TextArea
+              component={componentWithResolvedDataKey}
+              form={form}
+              context={context}
+            />
           );
         case "date-input":
           return (
-            <DateInput component={component} form={form} context={context} />
+            <DateInput
+              component={componentWithResolvedDataKey}
+              form={form}
+              context={context}
+            />
           );
         case "time-input":
           return (
-            <TimeInput component={component} form={form} context={context} />
+            <TimeInput
+              component={componentWithResolvedDataKey}
+              form={form}
+              context={context}
+            />
           );
         case "numeric-input":
           return (
-            <NumericInput component={component} form={form} context={context} />
+            <NumericInput
+              component={componentWithResolvedDataKey}
+              form={form}
+              context={context}
+            />
           );
         case "single-checkbox":
           return (
             <SingleCheckbox
-              component={component}
+              component={componentWithResolvedDataKey}
               form={form}
               context={context}
             />
           );
         case "checkboxes":
           return (
-            <Checkboxes component={component} form={form} context={context} />
+            <Checkboxes
+              component={componentWithResolvedDataKey}
+              form={form}
+              context={context}
+            />
           );
         case "radio":
-          return <Radio component={component} form={form} context={context} />;
+          return (
+            <Radio
+              component={componentWithResolvedDataKey}
+              form={form}
+              context={context}
+            />
+          );
         case "dropdown":
           return (
-            <Dropdown component={component} form={form} context={context} />
+            <Dropdown
+              component={componentWithResolvedDataKey}
+              form={form}
+              context={context}
+            />
           );
         case "slider":
-          return <Slider component={component} form={form} context={context} />;
+          return (
+            <Slider
+              component={componentWithResolvedDataKey}
+              form={form}
+              context={context}
+            />
+          );
         case "likert-scale":
           return (
-            <LikertScale component={component} form={form} context={context} />
+            <LikertScale
+              component={componentWithResolvedDataKey}
+              form={form}
+              context={context}
+            />
           );
       }
       break;
