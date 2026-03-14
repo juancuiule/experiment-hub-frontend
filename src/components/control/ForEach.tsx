@@ -1,13 +1,12 @@
 "use client";
 
-import { ScreenComponent } from "@/lib/components";
 import { ForEachComponent } from "@/lib/components/control";
-import { getValue } from "@/lib/conditions";
+import { mergeContext } from "@/lib/flow";
+import { getValue } from "@/lib/resolve";
 import { Context } from "@/lib/types";
 import { Fragment, useMemo } from "react";
 import { UseFormReturn, useWatch } from "react-hook-form";
-import { RenderProps, resolveString } from "../primitives";
-import { deepMerge } from "@/lib/flow";
+import { RenderProps } from "../primitives";
 
 type Props = {
   component: ForEachComponent;
@@ -30,14 +29,18 @@ export function ForEach({
   const items: string[] = useMemo(() => {
     return component.props.type === "static"
       ? component.props.values
-      : getValue(context, component.props.dataKey) || [];
+      : (getValue(component.props.dataKey, context) as string[]) || [];
   }, [context, formValues]);
 
   return (
     <>
       {items.map((itemValue, index) => {
-        const itemContext: Context = deepMerge(context, {
-          screenData: { foreach: { value: itemValue, index } },
+        const itemContext: Context = mergeContext(context, {
+          screenData: {
+            foreachData: {
+              [component.props.id]: { value: itemValue, index },
+            },
+          },
         });
 
         return (

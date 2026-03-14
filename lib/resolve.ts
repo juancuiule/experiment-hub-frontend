@@ -1,10 +1,73 @@
-import { getValue } from "./conditions";
+// import { getValue } from "./conditions";
 import { Context } from "./types";
 
+type Prefix = "$$" | "@" | "$" | "#";
+
+/*
+template syntax:
+all of this between {{ and }} will be replaced with the value of the key in the context
+
+- $$ => context.data
+        example: {{$$user.name}} => context.data.user.name
+-  $ => context.screenData
+        example: {{$slider}} => context.screenData.slider
+-  @ => context.loopData
+        example: {{@loopSports.value}} => context.loopData.loopSports.value
+-  # => context.screenData.foreachData
+        example: {{#foreachSport.value}} => context.screenData.foreachData.foreachSport.value
+*/
 export function resolveValuesInString(text: string, context: Context): string {
-  return text.replace(/(\$\$[\w.-]+|@[\w.]+)/g, (match) => {
-    const key = match as `$$${string}` | `@${string}`;
-    const resolved = getValue(context, key);
+  const regex = /\{\{(\$\$|\$|@|#)([a-zA-Z0-9_.\-]+)\}\}/g;
+  return text.replace(regex, (match, prefix: Prefix, path: string) => {
+    console.log("Resolving:", match, "with prefix:", prefix, "and path:", path);
+    const resolved = getValue(`${prefix}${path}`, context);
     return resolved != null ? String(resolved) : match;
   });
+}
+
+export function getPrefixAndPath(
+  text: string,
+): { prefix: Prefix; path: string } | null {
+  const regex = /^(\$\$|\$|@|#)([a-zA-Z0-9_.\-]+)$/;
+  const match = text.match(regex);
+  if (match) {
+    const [, prefix, path] = match;
+    return { prefix: prefix as Prefix, path };
+  }
+  return null;
+}
+
+export function getPath(text: string, record: Record<string, any>) {
+  return text
+    .split(".")
+    .reduce((obj, key) => (obj == null ? undefined : obj[key]), record) as
+    | string
+    | number
+    | string[];
+}
+
+export function getValue(key: string, context: Context) {
+  const { data = {}, screenData = {}, loopData = {} } = context;
+
+  const { prefix, path } = getPrefixAndPath(key) || {};
+  if (!prefix || !path) {
+    throw new Error(`Invalid key format: ${key}`);
+  }
+
+  switch (prefix) {
+    case "$": {
+      return getPath(path, screenData);
+    }
+    case "$$": {
+      return getPath(path, data);
+    }
+    case "@": {
+      return getPath(path, loopData);
+    }
+    case "#": {
+      return getPath(path, screenData.foreachData || {});
+    }
+  }
+
+  throw new Error(`Invalid prefix: ${prefix}`);
 }

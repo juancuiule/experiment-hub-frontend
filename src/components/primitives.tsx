@@ -1,7 +1,7 @@
 "use client";
 
 import { UseFormReturn } from "react-hook-form";
-import { getValue } from "@/lib/conditions";
+import { getValue, resolveValuesInString } from "@/lib/resolve";
 import { ScreenComponent } from "@/lib/components";
 import { Option, OptionsSource } from "@/lib/components/response";
 import { Context } from "@/lib/types";
@@ -19,24 +19,19 @@ export const inputBase =
 export const checkboxBase =
   "size-4 border border-gray-400 rounded-sm flex items-center justify-center flex-shrink-0 data-[state=checked]:bg-black data-[state=checked]:border-black transition-colors";
 
-export function resolveOptions(options: OptionsSource, context: Context): Option[] {
+export function resolveOptions(
+  options: OptionsSource,
+  context: Context,
+): Option[] {
   if (Array.isArray(options)) return options;
-  const value = getValue(context, options);
+  const value = getValue(options, context);
   if (!Array.isArray(value)) return [];
   return value.map((item: unknown) =>
     typeof item === "string" ? { label: item, value: item } : (item as Option),
   );
 }
 
-export function resolveString(template: string, context: Context): string {
-  return template.replace(/(\$\$[\w.]+|@\w+|\$[\w.]+)/g, (match) => {
-    const value = getValue(
-      context,
-      match as `$$${string}` | `@${string}` | `$${string}`,
-    );
-    return value != null ? String(value) : match;
-  });
-}
+export const resolveString = resolveValuesInString;
 
 export function FieldError({ message }: { message?: string }) {
   if (!message) return null;

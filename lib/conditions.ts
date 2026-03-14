@@ -1,5 +1,5 @@
 import { Context } from "./types";
-
+import { getPrefixAndPath, getValue } from "./resolve";
 export type BaseOperator = "lt" | "lte" | "gt" | "gte" | "eq" | "neq";
 
 export type ArrayOperator = "contains" | `length-${BaseOperator}`;
@@ -41,49 +41,17 @@ export function isBaseOperator(operator: Operator): operator is BaseOperator {
   return ["lt", "lte", "gt", "gte", "eq", "neq"].includes(operator);
 }
 
-export function getValue(
-  context: Context,
-  key: `$$${string}` | `@${string}` | `$${string}`,
-) {
-  if (key.startsWith("$$")) {
-    return key
-      .slice(2)
-      .split(".")
-      .reduce(
-        (obj: any, k) => (obj == null ? undefined : obj[k]),
-        context["data"],
-      );
-  }
-
-  if (key.startsWith("@")) {
-    return key
-      .slice(1)
-      .split(".")
-      .reduce(
-        (obj: any, k) => (obj == null ? undefined : obj[k]),
-        context["currentItem"],
-      );
-  }
-
-  if (key.startsWith("$")) {
-    return key
-      .slice(1)
-      .split(".")
-      .reduce(
-        (obj: any, k) => (obj == null ? undefined : obj[k]),
-        context["screenData"],
-      );
-  }
-
-  throw new Error(`Invalid key: ${key}`);
-}
-
 export function evaluateCondition(
   condition: Condition,
   context: Context,
 ): boolean {
   if (condition.type === "simple") {
-    const value = getValue(context, condition.dataKey);
+    const { prefix, path } = getPrefixAndPath(condition.dataKey) || {};
+    if (!prefix || !path) {
+      console.warn(`Invalid dataKey format: ${condition.dataKey}`);
+      return false;
+    }
+    const value = getValue(prefix, path, context);
 
     if (condition.operator === "contains") {
       return Array.isArray(value) && value.includes(condition.value);

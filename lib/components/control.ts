@@ -22,7 +22,7 @@ export interface ForEachComponent extends BaseControlComponent<
   (
     | { type: "static"; values: string[] }
     | { type: "dynamic"; dataKey: `$$${string}` | `$${string}` }
-  ) & { component: ScreenComponent }
+  ) & { id: string; component: ScreenComponent }
 > {}
 
 export type ControlComponent = ConditionalComponent | ForEachComponent;

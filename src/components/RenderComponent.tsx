@@ -19,8 +19,9 @@ import { Slider } from "./response/Slider";
 import { TextArea } from "./response/TextArea";
 import { TextInput } from "./response/TextInput";
 import { TimeInput } from "./response/TimeInput";
-import { RenderProps, resolveString } from "./primitives";
+import { RenderProps } from "./primitives";
 import { deepMerge } from "@/lib/flow";
+import { resolveValuesInString } from "@/lib/resolve";
 
 export function RenderComponent({
   component,
@@ -48,7 +49,7 @@ export function RenderComponent({
       break;
 
     case "response":
-      const dataKey = resolveString(component.props.dataKey, context);
+      const dataKey = resolveValuesInString(component.props.dataKey, context);
       const componentWithResolvedDataKey = deepMerge(component, {
         props: { dataKey },
       });

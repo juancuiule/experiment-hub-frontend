@@ -1,4 +1,5 @@
-import { evaluateCondition, getValue } from "./conditions";
+import { evaluateCondition } from "./conditions";
+
 import {
   isBranchConditionEdge,
   isBranchDefaultEdge,
@@ -8,6 +9,7 @@ import {
   isSequentialEdge,
 } from "./edges";
 import { BranchNode, Fork, ForkNode, FrameworkNode } from "./nodes";
+import { getValue } from "./resolve";
 import {
   Context,
   ExperimentFlow,
@@ -56,7 +58,9 @@ function initialState(
       const values =
         node.props.type === "static"
           ? node.props.values
-          : (getValue(context, node.props.dataKey) ?? []);
+          : ((getValue(node.props.dataKey, context) as string[]) ?? []);
+
+      console.log("Initializing loop with values:", values);
 
       return {
         type: "in-loop" as const,
@@ -96,7 +100,9 @@ async function enterStep(step: FlowStep): Promise<FlowStep> {
 
     // Skip the loop entirely when there are no values to iterate
     if (values.length === 0) {
-      const ctx = mergeContext(step.context, { loops: { [node.id]: { order: [] } } });
+      const ctx = mergeContext(step.context, {
+        loops: { [node.id]: { order: [] } },
+      });
       return exitToNextNode(step.experiment, ctx, node.id, step.dataPath ?? []);
     }
 
@@ -227,25 +233,6 @@ function getNode(experiment: ExperimentFlow, nodeId: string) {
   return experiment.nodes.find((n) => n.id === nodeId);
 }
 
-/*
-context: {
-  branches: { "age-branch": "under-30" },
-  ...
-}
-
-toMerge: {
-  branches: { "gender-branch": "male" },
-}
-
-result: {
-  branches: {
-    "age-branch": "under-30",
-    "gender-branch": "male"
-  },
-  ...
-  }
-}
-*/
 // Arrays are replaced wholesale, not recursively merged.
 export function deepMerge(target: any, source: any): any {
   const result = { ...target };
@@ -260,7 +247,7 @@ export function deepMerge(target: any, source: any): any {
   return result;
 }
 
-function mergeContext(context: Context, toMerge: Context): Context {
+export function mergeContext(context: Context, toMerge: Context): Context {
   return deepMerge(context, toMerge);
 }
 
@@ -271,7 +258,9 @@ function withCurrentItem(
   index: number,
 ): Context {
   return mergeContext(context, {
-    currentItem: { value: values[index], index, loopId },
+    loopData: {
+      [loopId]: { value: values[index], index },
+    },
   });
 }
 
@@ -452,7 +441,12 @@ export async function traverseInPath(
       };
     }
 
-    return exitToNextNode(experiment, nContext, state.node.id, step.dataPath ?? []);
+    return exitToNextNode(
+      experiment,
+      nContext,
+      state.node.id,
+      step.dataPath ?? [],
+    );
   }
 
   return {
@@ -519,8 +513,12 @@ export async function traverseInLoop(
     }
 
     // Clear currentItem when exiting the loop
-    const { currentItem: _, ...contextAfterLoop } = nContext;
-    return exitToNextNode(experiment, contextAfterLoop, state.node.id, step.dataPath ?? []);
+    return exitToNextNode(
+      experiment,
+      nContext,
+      state.node.id,
+      step.dataPath ?? [],
+    );
   }
 
   return {

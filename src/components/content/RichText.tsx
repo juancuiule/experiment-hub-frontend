@@ -3,7 +3,7 @@
 import Markdown from "react-markdown";
 import { RichTextComponent } from "@/lib/components/content";
 import { Context } from "@/lib/types";
-import { resolveString } from "../primitives";
+import { resolveValuesInString } from "@/lib/resolve";
 
 type Props = {
   component: RichTextComponent;
@@ -59,7 +59,7 @@ export function RichText({ component, context }: Props) {
         ),
       }}
     >
-      {resolveString(content, context)}
+      {resolveValuesInString(content, context)}
     </Markdown>
   );
 }

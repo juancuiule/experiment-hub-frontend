@@ -8,16 +8,20 @@ export type ExperimentFlow = {
   screens?: FrameworkScreen[];
 };
 
+type IterativeItem = { value: any; index: number };
+
 export type Context = Partial<{
   start: { group: string };
   checkpoints: { [checkpointName: string]: string };
   data: Record<string, any>;
-  screenData: Record<string, any>;
-  currentItem: { value: any; index: number; loopId: string };
+  screenData: Record<string, any> & {
+    foreachData?: { [foreachId: string]: IterativeItem };
+  };
   branches: Record<string, string>;
   forks: Record<string, string>;
   paths: { [pathNodeId: string]: { order: string[] } };
   loops: { [loopNodeId: string]: { order: string[] } };
+  loopData: { [loopNodeId: string]: IterativeItem };
 }>;
 
 export type InitialState = { type: "initial" };
