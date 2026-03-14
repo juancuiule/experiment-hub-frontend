@@ -1,10 +1,11 @@
 "use client";
 
+import { LikertScaleComponent } from "@/lib/components/response";
+import { resolveValuesInString } from "@/lib/resolve";
+import { Context } from "@/lib/types";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
-import { LikertScaleComponent } from "@/lib/components/response";
-import { Context } from "@/lib/types";
-import { FieldError, resolveString } from "../primitives";
+import { FieldError } from "../primitives";
 
 type Props = {
   component: LikertScaleComponent;
@@ -25,7 +26,7 @@ export function LikertScale({ component, form, context }: Props) {
       name={dataKey}
       render={({ field }) => (
         <div className="my-4 flex flex-col gap-1">
-          <label>{resolveString(component.props.label, context)}</label>
+          <label>{resolveValuesInString(component.props.label, context)}</label>
           <div className="mt-3">
             <div className="flex items-center justify-between gap-1">
               {component.props.options.map((opt) => {

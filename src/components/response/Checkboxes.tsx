@@ -1,15 +1,15 @@
 "use client";
 
+import { CheckboxesComponent } from "@/lib/components/response";
+import { resolveValuesInString } from "@/lib/resolve";
+import { Context } from "@/lib/types";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import { Controller, UseFormReturn } from "react-hook-form";
-import { CheckboxesComponent } from "@/lib/components/response";
-import { Context } from "@/lib/types";
 import {
-  CheckIcon,
   checkboxBase,
+  CheckIcon,
   FieldError,
-  resolveOptions,
-  resolveString,
+  resolveOptions
 } from "../primitives";
 
 type Props = {
@@ -31,7 +31,7 @@ export function Checkboxes({ component, form, context }: Props) {
       name={dataKey}
       render={({ field }) => (
         <div className="my-4 flex flex-col gap-1">
-          <label>{resolveString(component.props.label, context)}</label>
+          <label>{resolveValuesInString(component.props.label, context)}</label>
           <div className="flex flex-col gap-2 mt-2">
             {resolveOptions(component.props.options, context).map((opt) => {
               const checked =

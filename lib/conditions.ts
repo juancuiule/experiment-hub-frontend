@@ -1,5 +1,6 @@
+import { getValue } from "./resolve";
 import { Context } from "./types";
-import { getPrefixAndPath, getValue } from "./resolve";
+
 export type BaseOperator = "lt" | "lte" | "gt" | "gte" | "eq" | "neq";
 
 export type ArrayOperator = "contains" | `length-${BaseOperator}`;
@@ -46,12 +47,7 @@ export function evaluateCondition(
   context: Context,
 ): boolean {
   if (condition.type === "simple") {
-    const { prefix, path } = getPrefixAndPath(condition.dataKey) || {};
-    if (!prefix || !path) {
-      console.warn(`Invalid dataKey format: ${condition.dataKey}`);
-      return false;
-    }
-    const value = getValue(prefix, path, context);
+    const value = getValue(condition.dataKey, context);
 
     if (condition.operator === "contains") {
       return Array.isArray(value) && value.includes(condition.value);

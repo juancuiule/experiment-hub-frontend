@@ -1,10 +1,10 @@
 "use client";
 
-import { UseFormReturn } from "react-hook-form";
-import { getValue, resolveValuesInString } from "@/lib/resolve";
 import { ScreenComponent } from "@/lib/components";
 import { Option, OptionsSource } from "@/lib/components/response";
+import { getValue } from "@/lib/resolve";
 import { Context } from "@/lib/types";
+import { UseFormReturn } from "react-hook-form";
 
 export type RenderProps = {
   component: ScreenComponent;
@@ -30,8 +30,6 @@ export function resolveOptions(
     typeof item === "string" ? { label: item, value: item } : (item as Option),
   );
 }
-
-export const resolveString = resolveValuesInString;
 
 export function FieldError({ message }: { message?: string }) {
   if (!message) return null;

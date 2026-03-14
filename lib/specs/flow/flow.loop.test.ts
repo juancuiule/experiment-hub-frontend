@@ -26,42 +26,33 @@ describe("loop (static values)", () => {
     ],
   };
 
-  it("starts on the template screen with currentItem set for the first value", async () => {
+  it("starts on the template screen with loopData set for the first value", async () => {
     const step = await startExperiment(flow, "start");
     expect(step.state.type).toBe("in-loop");
     expect((step.state as any).index).toBe(0);
-    expect(step.context.currentItem).toEqual({
-      value: "football",
-      index: 0,
-      loopId: "loop-sports",
-    });
+    expect(step.context.loopData?.["loop-sports"]).toEqual({ value: "football", index: 0 });
   });
 
-  it("advances currentItem on each iteration", async () => {
+  it("advances loopData on each iteration", async () => {
     let step = await startExperiment(flow, "start"); // index 0: football
     step = await traverse(step, { liked: true }); // advance to index 1: basketball
     expect((step.state as any).index).toBe(1);
-    expect(step.context.currentItem).toEqual({
-      value: "basketball",
-      index: 1,
-      loopId: "loop-sports",
-    });
+    expect(step.context.loopData?.["loop-sports"]).toEqual({ value: "basketball", index: 1 });
   });
 
-  it("exits the loop after the last iteration and clears currentItem", async () => {
+  it("exits the loop after the last iteration and moves to the next node", async () => {
     let step = await startExperiment(flow, "start");
     step = await traverse(step, {}); // football → basketball
     step = await traverse(step, {}); // basketball → tennis
     step = await traverse(step, {}); // tennis → exit loop
     expect((step.state as any).node.id).toBe("screen-end");
-    expect(step.context.currentItem).toBeUndefined();
   });
 
   it("iterates through all values in order", async () => {
     let step = await startExperiment(flow, "start");
     const seen: string[] = [];
     for (let i = 0; i < 3; i++) {
-      seen.push(step.context.currentItem?.value ?? "");
+      seen.push(step.context.loopData?.["loop-sports"]?.value ?? "");
       step = await traverse(step, { liked: i % 2 === 0 });
     }
     expect(seen).toEqual(["football", "basketball", "tennis"]);
@@ -108,7 +99,7 @@ describe("loop (dynamic values from context)", () => {
     let step = await startExperiment(flow, "start");
     step = await traverse(step, { sports: ["football", "tennis"] });
     expect(step.state.type).toBe("in-loop");
-    expect(step.context.currentItem?.value).toBe("football");
+    expect(step.context.loopData?.["loop-dynamic"]?.value).toBe("football");
   });
 
   it("iterates through all dynamic values in order", async () => {
@@ -116,18 +107,17 @@ describe("loop (dynamic values from context)", () => {
     step = await traverse(step, { sports: ["alpha", "beta", "gamma"] });
     const seen: string[] = [];
     while (step.state.type === "in-loop") {
-      seen.push(step.context.currentItem?.value);
+      seen.push(step.context.loopData?.["loop-dynamic"]?.value);
       step = await traverse(step, { rated: true });
     }
     expect(seen).toEqual(["alpha", "beta", "gamma"]);
   });
 
-  it("clears currentItem from context after the loop exits", async () => {
+  it("exits to the next node after the loop completes", async () => {
     let step = await startExperiment(flow, "start");
     step = await traverse(step, { sports: ["only-one"] });
     step = await traverse(step, { rated: true }); // exit loop
     expect((step.state as any).node.id).toBe("screen-end");
-    expect(step.context.currentItem).toBeUndefined();
   });
 
   it("skips the loop entirely when the dynamic values array is empty", async () => {
@@ -135,7 +125,7 @@ describe("loop (dynamic values from context)", () => {
     step = await traverse(step, {}); // setup with no sports field → empty array → loop skipped
     expect(step.state.type).toBe("in-node");
     expect((step.state as any).node.id).toBe("screen-end");
-    expect(step.context.currentItem).toBeUndefined();
+    expect(step.context.loopData?.["loop-dynamic"]).toBeUndefined();
     expect(step.context.loops?.["loop-dynamic"]?.order).toEqual([]);
   });
 });

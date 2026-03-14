@@ -1,10 +1,11 @@
 "use client";
 
+import { TextAreaComponent } from "@/lib/components/response";
+import { resolveValuesInString } from "@/lib/resolve";
+import { Context } from "@/lib/types";
 import { UseFormReturn } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
-import { TextAreaComponent } from "@/lib/components/response";
-import { Context } from "@/lib/types";
-import { FieldError, inputBase, resolveString } from "../primitives";
+import { FieldError, inputBase } from "../primitives";
 
 type Props = {
   component: TextAreaComponent;
@@ -21,7 +22,7 @@ export function TextArea({ component, form, context }: Props) {
 
   return (
     <div className="my-4 flex flex-col gap-1">
-      <label>{resolveString(component.props.label, context)}</label>
+      <label>{resolveValuesInString(component.props.label, context)}</label>
       <textarea
         {...register(dataKey)}
         rows={component.props.lines ?? 4}

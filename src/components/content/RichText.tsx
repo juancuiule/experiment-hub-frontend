@@ -1,9 +1,9 @@
 "use client";
 
-import Markdown from "react-markdown";
 import { RichTextComponent } from "@/lib/components/content";
-import { Context } from "@/lib/types";
 import { resolveValuesInString } from "@/lib/resolve";
+import { Context } from "@/lib/types";
+import Markdown from "react-markdown";
 
 type Props = {
   component: RichTextComponent;

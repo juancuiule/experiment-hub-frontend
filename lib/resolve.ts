@@ -37,13 +37,10 @@ export function getPrefixAndPath(
   return null;
 }
 
-export function getPath(text: string, record: Record<string, any>) {
+export function getPath(text: string, record: Record<string, any>): any {
   return text
     .split(".")
-    .reduce((obj, key) => (obj == null ? undefined : obj[key]), record) as
-    | string
-    | number
-    | string[];
+    .reduce((obj, key) => (obj == null ? undefined : obj[key]), record);
 }
 
 export function getValue(key: string, context: Context) {

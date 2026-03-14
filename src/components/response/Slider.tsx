@@ -1,10 +1,11 @@
 "use client";
 
+import { SliderComponent } from "@/lib/components/response";
+import { resolveValuesInString } from "@/lib/resolve";
+import { Context } from "@/lib/types";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import { Controller, UseFormReturn } from "react-hook-form";
-import { SliderComponent } from "@/lib/components/response";
-import { Context } from "@/lib/types";
-import { FieldError, resolveString } from "../primitives";
+import { FieldError } from "../primitives";
 
 type Props = {
   component: SliderComponent;
@@ -30,7 +31,9 @@ export function Slider({ component, form, context }: Props) {
         return (
           <div className="my-4 flex flex-col gap-1">
             <div className="flex items-center justify-between">
-              <label>{resolveString(component.props.label, context)}</label>
+              <label>
+                {resolveValuesInString(component.props.label, context)}
+              </label>
               {component.props.showValue && (
                 <span className="text-sm font-medium tabular-nums">
                   {value}

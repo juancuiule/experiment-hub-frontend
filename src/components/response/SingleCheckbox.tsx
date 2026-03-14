@@ -1,16 +1,12 @@
 "use client";
 
+import { SingleCheckboxComponent } from "@/lib/components/response";
+import { resolveValuesInString } from "@/lib/resolve";
+import { Context } from "@/lib/types";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import { Controller, UseFormReturn } from "react-hook-form";
-import { SingleCheckboxComponent } from "@/lib/components/response";
-import { Context } from "@/lib/types";
-import {
-  CheckIcon,
-  checkboxBase,
-  FieldError,
-  resolveString,
-} from "../primitives";
 import { twMerge } from "tailwind-merge";
+import { checkboxBase, CheckIcon, FieldError } from "../primitives";
 
 type Props = {
   component: SingleCheckboxComponent;
@@ -43,7 +39,7 @@ export function SingleCheckbox({ component, form, context }: Props) {
               </CheckboxPrimitive.Indicator>
             </CheckboxPrimitive.Root>
             <label className="leading-tight" htmlFor={`${dataKey}`}>
-              {resolveString(component.props.label, context)}
+              {resolveValuesInString(component.props.label, context)}
             </label>
           </div>
           <FieldError

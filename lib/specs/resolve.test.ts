@@ -2,70 +2,116 @@ import { describe, expect, it } from "vitest";
 import { resolveValuesInString } from "../resolve";
 
 describe("resolveValuesInString", () => {
-  describe("@value references", () => {
-    it("replaces @value with currentItem.value", () => {
-      const ctx = { currentItem: { value: "soccer", index: 0, loopId: "l" } };
-      expect(resolveValuesInString("I like @value", ctx)).toBe("I like soccer");
+  describe("@ references (loopData)", () => {
+    it("replaces {{@loopId.value}} with the current loop item value", () => {
+      const ctx = { loopData: { "loop-sports": { value: "soccer", index: 0 } } };
+      expect(resolveValuesInString("I like {{@loop-sports.value}}", ctx)).toBe("I like soccer");
     });
 
-    it("replaces @index with currentItem.index", () => {
-      const ctx = { currentItem: { value: "x", index: 2, loopId: "l" } };
-      expect(resolveValuesInString("Item @index", ctx)).toBe("Item 2");
+    it("replaces {{@loopId.index}} with the current loop item index", () => {
+      const ctx = { loopData: { "loop-sports": { value: "x", index: 2 } } };
+      expect(resolveValuesInString("Item {{@loop-sports.index}}", ctx)).toBe("Item 2");
     });
 
-    it("replaces @loopId with currentItem.loopId", () => {
-      const ctx = { currentItem: { value: "x", index: 0, loopId: "loop-sports" } };
-      expect(resolveValuesInString("Loop: @loopId", ctx)).toBe("Loop: loop-sports");
+    it("replaces {{@loopId.index}} when index is 0 (does not leave token)", () => {
+      const ctx = { loopData: { "loop-sports": { value: "x", index: 0 } } };
+      expect(resolveValuesInString("Item {{@loop-sports.index}}", ctx)).toBe("Item 0");
     });
 
-    it("replaces @index when value is 0 (does not leave token)", () => {
-      const ctx = { currentItem: { value: "x", index: 0, loopId: "l" } };
-      expect(resolveValuesInString("Item @index", ctx)).toBe("Item 0");
+    it("leaves the token as-is when loopData for that id is undefined", () => {
+      expect(resolveValuesInString("Hello {{@loop-sports.value}}", {})).toBe(
+        "Hello {{@loop-sports.value}}",
+      );
     });
 
-    it("leaves the token as-is when currentItem is undefined", () => {
-      expect(resolveValuesInString("Hello @value", {})).toBe("Hello @value");
+    it("replaces multiple @ tokens in one string", () => {
+      const ctx = { loopData: { "loop-sports": { value: "chess", index: 0 } } };
+      expect(
+        resolveValuesInString("{{@loop-sports.value}} and {{@loop-sports.value}}", ctx),
+      ).toBe("chess and chess");
     });
 
-    it("replaces multiple @value tokens in one string", () => {
-      const ctx = { currentItem: { value: "chess", index: 0, loopId: "l" } };
-      expect(resolveValuesInString("@value and @value", ctx)).toBe("chess and chess");
+    it("resolves tokens for different loop ids independently", () => {
+      const ctx = {
+        loopData: {
+          "loop-sports": { value: "football", index: 0 },
+          "loop-colors": { value: "red", index: 1 },
+        },
+      };
+      expect(
+        resolveValuesInString("{{@loop-sports.value}} / {{@loop-colors.value}}", ctx),
+      ).toBe("football / red");
     });
   });
 
-  describe("$$ references", () => {
-    it("replaces $$key with the value from context.data", () => {
+  describe("# references (foreachData)", () => {
+    it("replaces {{#foreachId.value}} with the foreach item value", () => {
+      const ctx = {
+        screenData: { foreachData: { "foreach-sport": { value: "tennis", index: 0 } } },
+      };
+      expect(resolveValuesInString("Sport: {{#foreach-sport.value}}", ctx)).toBe("Sport: tennis");
+    });
+
+    it("replaces {{#foreachId.index}} with the foreach item index", () => {
+      const ctx = {
+        screenData: { foreachData: { "foreach-sport": { value: "tennis", index: 3 } } },
+      };
+      expect(resolveValuesInString("Index: {{#foreach-sport.index}}", ctx)).toBe("Index: 3");
+    });
+
+    it("leaves the token as-is when foreachData is undefined", () => {
+      expect(resolveValuesInString("{{#foreach-sport.value}}", {})).toBe(
+        "{{#foreach-sport.value}}",
+      );
+    });
+  });
+
+  describe("$$ references (context.data)", () => {
+    it("replaces {{$$key}} with the value from context.data", () => {
       const ctx = { data: { welcome: { name: "Juan" } } };
-      expect(resolveValuesInString("Hi $$welcome.name!", ctx)).toBe("Hi Juan!");
+      expect(resolveValuesInString("Hi {{$$welcome.name}}!", ctx)).toBe("Hi Juan!");
     });
 
     it("resolves deeply nested paths", () => {
       const ctx = { data: { a: { b: { c: "deep" } } } };
-      expect(resolveValuesInString("$$a.b.c", ctx)).toBe("deep");
+      expect(resolveValuesInString("{{$$a.b.c}}", ctx)).toBe("deep");
     });
 
     it("leaves the token as-is when the path does not resolve", () => {
       const ctx = { data: { welcome: {} } };
-      expect(resolveValuesInString("Hi $$welcome.name", ctx)).toBe("Hi $$welcome.name");
+      expect(resolveValuesInString("Hi {{$$welcome.name}}", ctx)).toBe("Hi {{$$welcome.name}}");
     });
 
     it("leaves the token as-is when context.data is undefined", () => {
-      expect(resolveValuesInString("$$foo.bar", {})).toBe("$$foo.bar");
+      expect(resolveValuesInString("{{$$foo.bar}}", {})).toBe("{{$$foo.bar}}");
     });
 
     it("resolves multiple distinct $$ tokens in one string", () => {
       const ctx = { data: { a: { x: "foo" }, b: { y: "bar" } } };
-      expect(resolveValuesInString("$$a.x and $$b.y", ctx)).toBe("foo and bar");
+      expect(resolveValuesInString("{{$$a.x}} and {{$$b.y}}", ctx)).toBe("foo and bar");
+    });
+  });
+
+  describe("$ references (context.screenData)", () => {
+    it("replaces {{$key}} with the value from context.screenData", () => {
+      const ctx = { screenData: { slider: 5 } };
+      expect(resolveValuesInString("Value: {{$slider}}", ctx)).toBe("Value: 5");
+    });
+
+    it("leaves the token as-is when the path does not resolve", () => {
+      expect(resolveValuesInString("{{$missing}}", {})).toBe("{{$missing}}");
     });
   });
 
   describe("mixed references", () => {
-    it("resolves both @value and $$ tokens in the same string", () => {
+    it("resolves both @ and $$ tokens in the same string", () => {
       const ctx = {
         data: { welcome: { name: "Juan" } },
-        currentItem: { value: "soccer", index: 0, loopId: "l" },
+        loopData: { "loop-sports": { value: "soccer", index: 0 } },
       };
-      expect(resolveValuesInString("$$welcome.name likes @value", ctx)).toBe("Juan likes soccer");
+      expect(
+        resolveValuesInString("{{$$welcome.name}} likes {{@loop-sports.value}}", ctx),
+      ).toBe("Juan likes soccer");
     });
   });
 
@@ -75,8 +121,8 @@ describe("resolveValuesInString", () => {
     });
 
     it("converts non-string resolved values to string", () => {
-      const ctx = { currentItem: { value: 42, index: 0, loopId: "l" } };
-      expect(resolveValuesInString("Score: @value", ctx)).toBe("Score: 42");
+      const ctx = { loopData: { "loop-scores": { value: 42, index: 0 } } };
+      expect(resolveValuesInString("Score: {{@loop-scores.value}}", ctx)).toBe("Score: 42");
     });
   });
 });

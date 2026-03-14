@@ -1,10 +1,11 @@
 "use client";
 
+import { RadioComponent } from "@/lib/components/response";
+import { resolveValuesInString } from "@/lib/resolve";
+import { Context } from "@/lib/types";
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
 import { Controller, UseFormReturn } from "react-hook-form";
-import { RadioComponent } from "@/lib/components/response";
-import { Context } from "@/lib/types";
-import { FieldError, resolveOptions, resolveString } from "../primitives";
+import { FieldError, resolveOptions } from "../primitives";
 
 type Props = {
   component: RadioComponent;
@@ -25,7 +26,7 @@ export function Radio({ component, form, context }: Props) {
       name={dataKey}
       render={({ field }) => (
         <div className="my-4 flex flex-col gap-1">
-          <label>{resolveString(component.props.label, context)}</label>
+          <label>{resolveValuesInString(component.props.label, context)}</label>
           <RadioGroupPrimitive.Root
             value={field.value}
             onValueChange={field.onChange}
