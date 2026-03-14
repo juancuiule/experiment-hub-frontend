@@ -60,8 +60,6 @@ function initialState(
           ? node.props.values
           : ((getValue(node.props.dataKey, context) as string[]) ?? []);
 
-      console.log("Initializing loop with values:", values);
-
       return {
         type: "in-loop" as const,
         node,
@@ -96,7 +94,15 @@ function initialState(
 // This function handles entering a step, applying any auto-traversal logic if needed.
 async function enterStep(step: FlowStep): Promise<FlowStep> {
   if (step.state.type === "in-loop") {
-    const { values, index, node } = step.state;
+    const { index, node, template } = step.state;
+
+    // Recompute values using the current context — critical for nested loops
+    // where the dataKey references a parent loop's item via @, since the parent's
+    // loopData is only available in context at enterStep time, not at initialState time.
+    const values =
+      node.props.type === "static"
+        ? node.props.values
+        : ((getValue(node.props.dataKey, step.context) as string[]) ?? []);
 
     // Skip the loop entirely when there are no values to iterate
     if (values.length === 0) {
@@ -110,7 +116,28 @@ async function enterStep(step: FlowStep): Promise<FlowStep> {
       withCurrentItem(step.context, node.id, values, index),
       { loops: { [node.id]: { order: values } } },
     );
-    return { ...step, context: contextWithItem };
+
+    // On first entry, reinitialize innerState with the updated context so nested
+    // loops can correctly resolve their own dataKey against this loop's current item.
+    // Then recursively call enterStep on it so nested loops also inject their
+    // current item into context (otherwise loopData for the inner loop is never set).
+    const freshInnerState =
+      index === 0
+        ? initialState(step.experiment, contextWithItem, template)
+        : step.state.innerState;
+
+    const innerStep = await enterStep({
+      state: freshInnerState,
+      experiment: step.experiment,
+      context: contextWithItem,
+      dataPath: step.dataPath,
+    });
+
+    return {
+      ...step,
+      state: { ...step.state, values, innerState: innerStep.state },
+      context: innerStep.context,
+    };
   }
   if (step.state.type === "in-path") {
     const { node, children } = step.state;
