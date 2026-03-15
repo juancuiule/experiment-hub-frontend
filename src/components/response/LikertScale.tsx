@@ -5,9 +5,8 @@ import { Context } from "@/lib/types";
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
-import { FieldError } from "../primitives";
 import { Label } from "../Label";
-import { Radio } from "./Radio";
+import { FieldError } from "../primitives";
 
 type Props = {
   component: LikertScaleComponent;
@@ -40,13 +39,6 @@ export function LikertScale({ component, form, context }: Props) {
             className="flex justify-between mt-3 flex-row gap-4 items-start"
           >
             {options.map((opt, i) => {
-              const labelAlign =
-                i === 0
-                  ? "text-left"
-                  : i === lastIndex
-                    ? "text-right"
-                    : "text-center";
-
               return (
                 <div
                   key={opt.value}
