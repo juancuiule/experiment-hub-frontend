@@ -32,7 +32,7 @@ export function FieldError({ message }: { message?: string }) {
 
 export function CheckIcon() {
   return (
-    <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
+    <svg className="size-3 text-white" viewBox="0 0 12 12" fill="none">
       <path
         d="M2 6l3 3 5-5"
         stroke="currentColor"
@@ -46,7 +46,7 @@ export function CheckIcon() {
 
 export function ChevronDownIcon() {
   return (
-    <svg className="w-4 h-4 text-gray-400" viewBox="0 0 16 16" fill="none">
+    <svg className="size-4 text-gray-400" viewBox="0 0 16 16" fill="none">
       <path
         d="M4 6l4 4 4-4"
         stroke="currentColor"

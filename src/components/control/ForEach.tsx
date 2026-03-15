@@ -44,7 +44,7 @@ export function ForEach({
         });
 
         return (
-          <Fragment key={index}>
+          <Fragment key={`${component.props.id}-${index}`}>
             {renderChild({
               component: template,
               form,

@@ -10,22 +10,24 @@ interface Props extends React.LabelHTMLAttributes<HTMLLabelElement> {
   context?: Context;
 }
 
+const allowedElements = [
+  "b",
+  "i",
+  "em",
+  "strong",
+  "u",
+  "s",
+  "del",
+  "code",
+  "a",
+  "p",
+];
+
 export function Label({ children, context, ...props }: Props) {
   return (
     <label {...props}>
       <Markdown
-        allowedElements={[
-          "b",
-          "i",
-          "em",
-          "strong",
-          "u",
-          "s",
-          "del",
-          "code",
-          "a",
-          "p",
-        ]}
+        allowedElements={allowedElements}
         components={{
           p: ({ children }) => <>{children}</>,
           code: ({ node, className, children, ...props }) => {

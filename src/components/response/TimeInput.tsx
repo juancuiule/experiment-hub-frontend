@@ -21,7 +21,7 @@ export function TimeInput({ component, form, context }: Props) {
   const { dataKey } = component.props;
 
   return (
-    <div className="my-4 flex flex-col gap-1">
+    <div className="flex flex-col gap-1">
       <Label htmlFor={dataKey} context={context}>
         {component.props.label}
       </Label>

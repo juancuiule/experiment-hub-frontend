@@ -6,11 +6,7 @@ import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
 import { Label } from "../Label";
-import {
-  CheckIcon,
-  FieldError,
-  resolveOptions
-} from "../primitives";
+import { CheckIcon, FieldError, resolveOptions } from "../primitives";
 
 type Props = {
   component: CheckboxesComponent;
@@ -32,7 +28,7 @@ export function Checkboxes({ component, form, context }: Props) {
       render={({ field }) => (
         <div className="flex flex-col gap-1">
           <Label context={context}>{component.props.label}</Label>
-          <div className="flex flex-col gap-2 mt-2">
+          <div className="flex flex-col gap-2">
             {resolveOptions(component.props.options, context).map((opt) => {
               const checked =
                 Array.isArray(field.value) && field.value.includes(opt.value);

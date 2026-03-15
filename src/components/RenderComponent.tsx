@@ -23,19 +23,19 @@ import { RenderProps } from "./primitives";
 import { deepMerge } from "@/lib/flow";
 import { resolveValuesInString } from "@/lib/resolve";
 
+const renderChild = (props: RenderProps) => <RenderComponent {...props} />;
+
 export function RenderComponent({
   component,
   form,
   context: propContext,
   isLoading,
 }: RenderProps) {
-  const renderChild = (props: RenderProps) => <RenderComponent {...props} />;
-
   const screenData = form.watch(); // Watch all form values to have them available in context
   const context = deepMerge(propContext, { screenData }); // Add form values to context for easier access in components
 
   switch (component.componentFamily) {
-    case "content":
+    case "content": {
       switch (component.template) {
         case "rich-text":
           return <RichText component={component} context={context} />;
@@ -46,106 +46,45 @@ export function RenderComponent({
         case "audio":
           return <Audio component={component} />;
       }
-      break;
+    }
 
-    case "response":
-      const dataKey = resolveValuesInString(component.props.dataKey, context);
-      const componentWithResolvedDataKey = deepMerge(component, {
-        props: { dataKey },
-      });
+    case "response": {
+      const props = {
+        form,
+        context,
+        component: deepMerge(component, {
+          props: {
+            dataKey: resolveValuesInString(component.props.dataKey, context),
+          },
+        }),
+      };
       switch (component.template) {
         case "text-input":
-          return (
-            <TextInput
-              component={componentWithResolvedDataKey}
-              form={form}
-              context={context}
-            />
-          );
+          return <TextInput {...props} />;
         case "text-area":
-          return (
-            <TextArea
-              component={componentWithResolvedDataKey}
-              form={form}
-              context={context}
-            />
-          );
+          return <TextArea {...props} />;
         case "date-input":
-          return (
-            <DateInput
-              component={componentWithResolvedDataKey}
-              form={form}
-              context={context}
-            />
-          );
+          return <DateInput {...props} />;
         case "time-input":
-          return (
-            <TimeInput
-              component={componentWithResolvedDataKey}
-              form={form}
-              context={context}
-            />
-          );
+          return <TimeInput {...props} />;
         case "numeric-input":
-          return (
-            <NumericInput
-              component={componentWithResolvedDataKey}
-              form={form}
-              context={context}
-            />
-          );
+          return <NumericInput {...props} />;
         case "single-checkbox":
-          return (
-            <SingleCheckbox
-              component={componentWithResolvedDataKey}
-              form={form}
-              context={context}
-            />
-          );
+          return <SingleCheckbox {...props} />;
         case "checkboxes":
-          return (
-            <Checkboxes
-              component={componentWithResolvedDataKey}
-              form={form}
-              context={context}
-            />
-          );
+          return <Checkboxes {...props} />;
         case "radio":
-          return (
-            <Radio
-              component={componentWithResolvedDataKey}
-              form={form}
-              context={context}
-            />
-          );
+          return <Radio {...props} />;
         case "dropdown":
-          return (
-            <Dropdown
-              component={componentWithResolvedDataKey}
-              form={form}
-              context={context}
-            />
-          );
+          return <Dropdown {...props} />;
         case "slider":
-          return (
-            <Slider
-              component={componentWithResolvedDataKey}
-              form={form}
-              context={context}
-            />
-          );
+          return <Slider {...props} />;
         case "likert-scale":
-          return (
-            <LikertScale
-              component={componentWithResolvedDataKey}
-              form={form}
-              context={context}
-            />
-          );
+          return <LikertScale {...props} />;
       }
-      break;
+    }
 
-    case "layout":
+    case "layout": {
       switch (component.template) {
         case "button":
           return <Button component={component} isLoading={isLoading} />;
@@ -160,9 +99,9 @@ export function RenderComponent({
             />
           );
       }
-      break;
+    }
 
-    case "control":
+    case "control": {
       switch (component.template) {
         case "conditional":
           return (
@@ -185,7 +124,7 @@ export function RenderComponent({
             />
           );
       }
-      break;
+    }
   }
 
   return (

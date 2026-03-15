@@ -8,8 +8,6 @@ import { Context } from "@/lib/types";
 import { buildSchema } from "@/lib/validation";
 import { RenderComponent } from "./components/RenderComponent";
 
-export { resolveString } from "./components/primitives";
-
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------

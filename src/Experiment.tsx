@@ -2,7 +2,7 @@
 
 import { getActiveState } from "@/lib/flow";
 import { Screen } from "@/src/Screen";
-import Stepper from "@/src/Stepper";
+import Stepper from "@/src/components/Stepper";
 import { useExperimentStore } from "@/src/data/store";
 import { useEffect } from "react";
 
@@ -84,7 +84,7 @@ export default function Experiment(props: Props) {
           <p className="text-red-500">Screen not found: {slug}</p>
         )}
         <div className="absolute w-[calc(100vw-512px)] h-[80svh] overflow-y-scroll right-0 top-0 p-2">
-          <pre className="font-mono text-xs">
+          <pre className="font-mono text-xs text-wrap">
             <code className="text-wrap">{JSON.stringify(step, null, 2)}</code>
           </pre>
         </div>

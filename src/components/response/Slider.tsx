@@ -29,7 +29,7 @@ export function Slider({ component, form, context }: Props) {
       render={({ field }) => {
         const value = field.value ?? min;
         return (
-          <div className="my-4 flex flex-col gap-1">
+          <div className="flex flex-col gap-1">
             <div className="flex items-center justify-between">
               <Label context={context}>{component.props.label}</Label>
               {component.props.showValue && (
@@ -38,7 +38,7 @@ export function Slider({ component, form, context }: Props) {
                 </span>
               )}
             </div>
-            <div className="mt-4">
+            <div>
               <SliderPrimitive.Root
                 value={[value]}
                 min={min}
