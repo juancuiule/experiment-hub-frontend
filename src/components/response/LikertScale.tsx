@@ -1,12 +1,13 @@
 "use client";
 
 import { LikertScaleComponent } from "@/lib/components/response";
-import { resolveValuesInString } from "@/lib/resolve";
 import { Context } from "@/lib/types";
+import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
 import { FieldError } from "../primitives";
 import { Label } from "../Label";
+import { Radio } from "./Radio";
 
 type Props = {
   component: LikertScaleComponent;
@@ -20,6 +21,8 @@ export function LikertScale({ component, form, context }: Props) {
     formState: { errors },
   } = form;
   const { dataKey } = component.props;
+  const options = component.props.options;
+  const lastIndex = options.length - 1;
 
   return (
     <Controller
@@ -27,64 +30,67 @@ export function LikertScale({ component, form, context }: Props) {
       name={dataKey}
       render={({ field }) => (
         <div className="flex flex-col gap-1">
-          <Label id={`${dataKey}-label`} context={context}>{component.props.label}</Label>
-          <div role="group" aria-labelledby={`${dataKey}-label`} className="mt-3">
-            <div className="flex items-center justify-between gap-1">
-              {component.props.options.map((opt) => {
-                const selected = field.value === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    aria-label={opt.label ? `${opt.value} — ${opt.label}` : String(opt.value)}
-                    aria-pressed={selected}
-                    onClick={() => field.onChange(opt.value)}
-                    className={twMerge(
-                      "w-8 h-8 rounded-full border text-sm shrink-0 transition-colors",
-                      selected
-                        ? "bg-black text-white border-black font-medium"
-                        : "bg-white text-black border-gray-300 hover:border-gray-500",
-                    )}
-                  >
-                    {opt.value}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="flex items-start mt-1">
-              {component.props.options.map((opt, i, list) => (
+          <Label id={`${dataKey}-label`} context={context}>
+            {component.props.label}
+          </Label>
+          <RadioGroupPrimitive.Root
+            value={field.value}
+            onValueChange={field.onChange}
+            aria-labelledby={`${dataKey}-label`}
+            className="flex justify-between mt-3 flex-row gap-4 items-start"
+          >
+            {options.map((opt, i) => {
+              const labelAlign =
+                i === 0
+                  ? "text-left"
+                  : i === lastIndex
+                    ? "text-right"
+                    : "text-center";
+
+              return (
                 <div
                   key={opt.value}
                   className={twMerge(
-                    "flex-1 flex justify-center",
-                    i === 0
-                      ? "justify-start"
-                      : i === list.length - 1
-                        ? "justify-end"
-                        : "justify-center",
+                    "flex justify-center items-center flex-col flex-1 gap-1",
                   )}
                 >
-                  {opt.label && (
-                    <span
+                  <RadioGroupPrimitive.Item
+                    id={`${dataKey}-${opt.value}`}
+                    value={opt.value}
+                    aria-label={
+                      opt.label
+                        ? `${opt.value} — ${opt.label}`
+                        : String(opt.value)
+                    }
+                    className="size-8 rounded-full relative border border-gray-300 flex items-center justify-center shrink-0 data-[state=checked]:border-black transition-colors"
+                  >
+                    <span className="text-xs absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 text-gray-500">
+                      <span className="ml-0.5">{i + 1}</span>
+                    </span>
+                    <RadioGroupPrimitive.Indicator
                       className={twMerge(
-                        "text-xs text-center",
-                        i === 0
-                          ? "text-left"
-                          : i === list.length - 1
-                            ? "text-right"
-                            : "",
-                        field.value === opt.value
-                          ? "font-medium text-black"
-                          : "text-gray-400",
+                        "size-6 flex items-center justify-center text-xs rounded-full",
+                        "bg-black text-white z-10 text-center",
+                      )}
+                    >
+                      {i + 1}
+                    </RadioGroupPrimitive.Indicator>
+                  </RadioGroupPrimitive.Item>
+                  {opt.label && (
+                    <Label
+                      htmlFor={`${dataKey}-${opt.value}`}
+                      context={context}
+                      className={twMerge(
+                        "text-xs w-full text-center text-balance",
                       )}
                     >
                       {opt.label}
-                    </span>
+                    </Label>
                   )}
                 </div>
-              ))}
-            </div>
-          </div>
+              );
+            })}
+          </RadioGroupPrimitive.Root>
           <FieldError
             message={errors[dataKey]?.message as string | undefined}
           />
