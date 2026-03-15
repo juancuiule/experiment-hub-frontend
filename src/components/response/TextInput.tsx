@@ -1,10 +1,11 @@
 "use client";
 
 import { TextInputComponent } from "@/lib/components/response";
-import { resolveValuesInString } from "@/lib/resolve";
 import { Context } from "@/lib/types";
 import { UseFormReturn } from "react-hook-form";
-import { FieldError, inputBase } from "../primitives";
+import { Input } from "../Input";
+import { Label } from "../Label";
+import { FieldError } from "../primitives";
 
 type Props = {
   component: TextInputComponent;
@@ -20,16 +21,15 @@ export function TextInput({ component, form, context }: Props) {
   const { dataKey } = component.props;
 
   return (
-    <div className="my-4 flex flex-col gap-1">
-      <label htmlFor={dataKey}>
-        {resolveValuesInString(component.props.label, context)}
-      </label>
-      <input
-        {...register(dataKey)}
+    <div className="flex flex-col gap-1">
+      <Label htmlFor={dataKey} context={context}>
+        {component.props.label}
+      </Label>
+      <Input
         id={dataKey}
+        {...register(dataKey)}
         type="text"
         placeholder={component.props.placeholder}
-        className={inputBase}
       />
       <FieldError message={errors[dataKey]?.message as string | undefined} />
     </div>

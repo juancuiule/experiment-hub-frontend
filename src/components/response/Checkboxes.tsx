@@ -1,12 +1,12 @@
 "use client";
 
 import { CheckboxesComponent } from "@/lib/components/response";
-import { resolveValuesInString } from "@/lib/resolve";
 import { Context } from "@/lib/types";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import { Controller, UseFormReturn } from "react-hook-form";
+import { twMerge } from "tailwind-merge";
+import { Label } from "../Label";
 import {
-  checkboxBase,
   CheckIcon,
   FieldError,
   resolveOptions
@@ -30,8 +30,8 @@ export function Checkboxes({ component, form, context }: Props) {
       control={control}
       name={dataKey}
       render={({ field }) => (
-        <div className="my-4 flex flex-col gap-1">
-          <label>{resolveValuesInString(component.props.label, context)}</label>
+        <div className="flex flex-col gap-1">
+          <Label context={context}>{component.props.label}</Label>
           <div className="flex flex-col gap-2 mt-2">
             {resolveOptions(component.props.options, context).map((opt) => {
               const checked =
@@ -51,18 +51,23 @@ export function Checkboxes({ component, form, context }: Props) {
                           : current.filter((v: string) => v !== opt.value),
                       );
                     }}
-                    className={checkboxBase}
+                    className={twMerge(
+                      "size-4 border border-gray-400 rounded-sm",
+                      "flex items-center justify-center shrink-0",
+                      "data-[state=checked]:bg-black data-[state=checked]:border-black",
+                      "transition-colors duration-75",
+                    )}
                   >
                     <CheckboxPrimitive.Indicator>
                       <CheckIcon />
                     </CheckboxPrimitive.Indicator>
                   </CheckboxPrimitive.Root>
-                  <label
+                  <Label
                     className="text-sm"
                     htmlFor={`${dataKey}-${opt.value}`}
                   >
                     {opt.label}
-                  </label>
+                  </Label>
                 </div>
               );
             })}

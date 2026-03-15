@@ -1,12 +1,12 @@
 "use client";
 
 import { SingleCheckboxComponent } from "@/lib/components/response";
-import { resolveValuesInString } from "@/lib/resolve";
 import { Context } from "@/lib/types";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
-import { checkboxBase, CheckIcon, FieldError } from "../primitives";
+import { Label } from "../Label";
+import { CheckIcon, FieldError } from "../primitives";
 
 type Props = {
   component: SingleCheckboxComponent;
@@ -26,21 +26,31 @@ export function SingleCheckbox({ component, form, context }: Props) {
       control={control}
       name={dataKey}
       render={({ field }) => (
-        <div className="my-4 flex flex-col gap-1">
+        <div className="flex flex-col gap-1">
           <div className="flex items-start gap-2">
             <CheckboxPrimitive.Root
               id={`${dataKey}`}
               checked={field.value}
               onCheckedChange={field.onChange}
-              className={twMerge(checkboxBase, "translate-y-0.5")}
+              className={twMerge(
+                "size-4 border border-gray-400 rounded-sm",
+                "flex items-center justify-center shrink-0",
+                "data-[state=checked]:bg-black data-[state=checked]:border-black",
+                "transition-colors duration-75",
+                "translate-y-0.5",
+              )}
             >
               <CheckboxPrimitive.Indicator>
                 <CheckIcon />
               </CheckboxPrimitive.Indicator>
             </CheckboxPrimitive.Root>
-            <label className="leading-tight" htmlFor={`${dataKey}`}>
-              {resolveValuesInString(component.props.label, context)}
-            </label>
+            <Label
+              context={context}
+              className="leading-tight text-sm"
+              htmlFor={`${dataKey}`}
+            >
+              {component.props.label}
+            </Label>
           </div>
           <FieldError
             message={errors[dataKey]?.message as string | undefined}

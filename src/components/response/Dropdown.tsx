@@ -6,6 +6,7 @@ import { Context } from "@/lib/types";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { ChevronDownIcon, FieldError, resolveOptions } from "../primitives";
+import { Label } from "../Label";
 
 type Props = {
   component: DropdownComponent;
@@ -25,13 +26,18 @@ export function Dropdown({ component, form, context }: Props) {
       control={control}
       name={dataKey}
       render={({ field }) => (
-        <div className="my-4 flex flex-col gap-1">
-          <label>{resolveValuesInString(component.props.label, context)}</label>
+        <div className="flex flex-col gap-1">
+          <Label htmlFor={dataKey} context={context}>
+            {component.props.label}
+          </Label>
           <SelectPrimitive.Root
             value={field.value}
             onValueChange={field.onChange}
           >
-            <SelectPrimitive.Trigger className="flex items-center justify-between border-b border-gray-300 pb-1 pt-1 w-full outline-none focus:border-black transition-colors data-placeholder:text-gray-300 text-sm">
+            <SelectPrimitive.Trigger
+              id={dataKey}
+              className="flex items-center justify-between border-b border-gray-300 pb-1 pt-1 w-full outline-none focus:border-black transition-colors data-placeholder:text-gray-300 text-sm"
+            >
               <SelectPrimitive.Value placeholder="Select one" />
               <SelectPrimitive.Icon>
                 <ChevronDownIcon />

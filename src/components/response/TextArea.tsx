@@ -1,10 +1,10 @@
 "use client";
 
 import { TextAreaComponent } from "@/lib/components/response";
-import { resolveValuesInString } from "@/lib/resolve";
 import { Context } from "@/lib/types";
 import { UseFormReturn } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
+import { Label } from "../Label";
 import { FieldError, inputBase } from "../primitives";
 
 type Props = {
@@ -21,13 +21,19 @@ export function TextArea({ component, form, context }: Props) {
   const { dataKey } = component.props;
 
   return (
-    <div className="my-4 flex flex-col gap-1">
-      <label>{resolveValuesInString(component.props.label, context)}</label>
+    <div className="flex flex-col gap-1">
+      <Label htmlFor={dataKey} context={context}>
+        {component.props.label}
+      </Label>
       <textarea
+        id={dataKey}
         {...register(dataKey)}
         rows={component.props.lines ?? 4}
         placeholder={component.props.placeholder}
-        className={twMerge(inputBase, "resize-none")}
+        className={twMerge(
+          "border-b border-gray-300 py-1 outline-none bg-transparent w-full placeholder:text-gray-300 focus:border-black transition-colors text-sm",
+          "resize-none",
+        )}
       />
       <FieldError message={errors[dataKey]?.message as string | undefined} />
     </div>

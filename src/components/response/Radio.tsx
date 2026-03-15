@@ -1,10 +1,10 @@
 "use client";
 
 import { RadioComponent } from "@/lib/components/response";
-import { resolveValuesInString } from "@/lib/resolve";
 import { Context } from "@/lib/types";
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
 import { Controller, UseFormReturn } from "react-hook-form";
+import { Label } from "../Label";
 import { FieldError, resolveOptions } from "../primitives";
 
 type Props = {
@@ -25,8 +25,8 @@ export function Radio({ component, form, context }: Props) {
       control={control}
       name={dataKey}
       render={({ field }) => (
-        <div className="my-4 flex flex-col gap-1">
-          <label>{resolveValuesInString(component.props.label, context)}</label>
+        <div className="flex flex-col gap-1">
+          <Label context={context}>{component.props.label}</Label>
           <RadioGroupPrimitive.Root
             value={field.value}
             onValueChange={field.onChange}
@@ -41,9 +41,13 @@ export function Radio({ component, form, context }: Props) {
                 >
                   <RadioGroupPrimitive.Indicator className="w-2 h-2 rounded-full bg-black" />
                 </RadioGroupPrimitive.Item>
-                <label className="text-sm" htmlFor={`${dataKey}-${opt.value}`}>
+                <Label
+                  context={context}
+                  className="text-sm"
+                  htmlFor={`${dataKey}-${opt.value}`}
+                >
                   {opt.label}
-                </label>
+                </Label>
               </div>
             ))}
           </RadioGroupPrimitive.Root>

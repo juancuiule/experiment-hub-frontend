@@ -1,10 +1,11 @@
 "use client";
 
 import { NumericInputComponent } from "@/lib/components/response";
-import { resolveValuesInString } from "@/lib/resolve";
 import { Context } from "@/lib/types";
 import { UseFormReturn } from "react-hook-form";
-import { FieldError, inputBase } from "../primitives";
+import { Input } from "../Input";
+import { Label } from "../Label";
+import { FieldError } from "../primitives";
 
 type Props = {
   component: NumericInputComponent;
@@ -20,16 +21,15 @@ export function NumericInput({ component, form, context }: Props) {
   const { dataKey } = component.props;
 
   return (
-    <div className="my-4 flex flex-col gap-1">
-      <label>{resolveValuesInString(component.props.label, context)}</label>
-      <input
+    <div className="flex flex-col gap-1">
+      <Label context={context}>{component.props.label}</Label>
+      <Input
         {...register(dataKey, { valueAsNumber: true })}
         type="number"
         placeholder={component.props.placeholder}
         min={component.props.min}
         max={component.props.max}
         step={component.props.step}
-        className={inputBase}
       />
       <FieldError message={errors[dataKey]?.message as string | undefined} />
     </div>
