@@ -27,8 +27,8 @@ export function LikertScale({ component, form, context }: Props) {
       name={dataKey}
       render={({ field }) => (
         <div className="flex flex-col gap-1">
-          <Label context={context}>{component.props.label}</Label>
-          <div className="mt-3">
+          <Label id={`${dataKey}-label`} context={context}>{component.props.label}</Label>
+          <div role="group" aria-labelledby={`${dataKey}-label`} className="mt-3">
             <div className="flex items-center justify-between gap-1">
               {component.props.options.map((opt) => {
                 const selected = field.value === opt.value;
@@ -36,6 +36,8 @@ export function LikertScale({ component, form, context }: Props) {
                   <button
                     key={opt.value}
                     type="button"
+                    aria-label={opt.label ? `${opt.value} — ${opt.label}` : String(opt.value)}
+                    aria-pressed={selected}
                     onClick={() => field.onChange(opt.value)}
                     className={twMerge(
                       "w-8 h-8 rounded-full border text-sm shrink-0 transition-colors",

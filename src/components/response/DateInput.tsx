@@ -22,7 +22,7 @@ export function DateInput({ component, form, context }: Props) {
 
   return (
     <div className="flex flex-col gap-1">
-      <Label context={context}>{component.props.label}</Label>
+      <Label htmlFor={dataKey} context={context}>{component.props.label}</Label>
       <Input id={dataKey} {...register(dataKey)} type="date" />
       <FieldError message={errors[dataKey]?.message as string | undefined} />
     </div>

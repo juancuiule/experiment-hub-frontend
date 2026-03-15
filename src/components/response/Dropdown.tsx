@@ -36,7 +36,7 @@ export function Dropdown({ component, form, context }: Props) {
           >
             <SelectPrimitive.Trigger
               id={dataKey}
-              className="flex items-center justify-between border-b border-gray-300 pb-1 pt-1 w-full outline-none focus:border-black transition-colors data-placeholder:text-gray-300 text-sm"
+              className="flex items-center justify-between border-b border-gray-300 pb-1 pt-1 w-full outline-none focus:border-black transition-colors data-placeholder:text-gray-500 text-sm"
             >
               <SelectPrimitive.Value placeholder="Select one" />
               <SelectPrimitive.Icon>

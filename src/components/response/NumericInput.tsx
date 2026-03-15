@@ -22,8 +22,9 @@ export function NumericInput({ component, form, context }: Props) {
 
   return (
     <div className="flex flex-col gap-1">
-      <Label context={context}>{component.props.label}</Label>
+      <Label htmlFor={dataKey} context={context}>{component.props.label}</Label>
       <Input
+        id={dataKey}
         {...register(dataKey, { valueAsNumber: true })}
         type="number"
         placeholder={component.props.placeholder}

@@ -8,7 +8,7 @@ export function Input(props: Props) {
       {...props}
       className={twMerge(
         "border-b border-gray-300 py-1 outline-none",
-        "bg-transparent w-full placeholder:text-gray-300 focus:border-black",
+        "bg-transparent w-full placeholder:text-gray-500 focus:border-black",
         "transition-colors text-sm",
       )}
     />
