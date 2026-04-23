@@ -30,13 +30,13 @@ tmux kill-session -t "$SESSION" 2>/dev/null || true
 tmux new-session -d -s "$SESSION" -x 220 -y 60
 
 # Status pane (top): show plan summary
-tmux rename-window -t "$SESSION:0" "workflow"
-tmux send-keys -t "$SESSION:0" \
+tmux rename-window -t "$SESSION" "workflow"
+tmux send-keys -t "$SESSION:workflow" \
   "node -e \"const p=JSON.parse(require('fs').readFileSync('$PLAN_FILE','utf-8')); console.log('PLAN: '+p.task+'\n'); p.subtasks.forEach((s,i)=>console.log('  '+(i+1)+'. ['+s.model+'] '+s.id+' → '+s.branch))\"" \
   Enter
 
 # Split status pane to make room for workers (workers take 75% of height)
-tmux split-window -t "$SESSION:0" -v -p 75
+tmux split-window -t "$SESSION:workflow" -v -p 75
 
 # Worker panes: split the bottom area horizontally for each worker
 FIRST_WORKER=true
@@ -52,23 +52,23 @@ for ID in $SUBTASK_IDS; do
   if [ "$FIRST_WORKER" = true ]; then
     FIRST_WORKER=false
     # First worker uses the bottom pane (index 1)
-    tmux send-keys -t "$SESSION:0.$PANE_IDX" \
+    tmux send-keys -t "$SESSION:workflow.$PANE_IDX" \
       "echo '=== WORKER: $ID ===' && claude --print \"\$(cat $PROMPT_FILE)\" && echo '✓ DONE: $ID'" \
       Enter
   else
     # Additional workers: split last worker pane horizontally
-    tmux split-window -t "$SESSION:0.$PANE_IDX" -h
+    tmux split-window -t "$SESSION:workflow.$PANE_IDX" -h
     PANE_IDX=$((PANE_IDX + 1))
-    tmux send-keys -t "$SESSION:0.$PANE_IDX" \
+    tmux send-keys -t "$SESSION:workflow.$PANE_IDX" \
       "echo '=== WORKER: $ID ===' && claude --print \"\$(cat $PROMPT_FILE)\" && echo '✓ DONE: $ID'" \
       Enter
   fi
 done
 
 # Reviewer pane: split off from status pane at the bottom
-tmux split-window -t "$SESSION:0.0" -v -p 20
-REVIEWER_PANE=$(tmux list-panes -t "$SESSION:0" -F "#{pane_index}" | tail -1)
-tmux send-keys -t "$SESSION:0.$REVIEWER_PANE" \
+tmux split-window -t "$SESSION:workflow.0" -v -p 20
+REVIEWER_PANE=$(tmux list-panes -t "$SESSION:workflow" -F "#{pane_index}" | tail -1)
+tmux send-keys -t "$SESSION:workflow.$REVIEWER_PANE" \
   "echo 'Waiting for all workers... run: pnpm review-merge when workers are done'" \
   Enter
 
