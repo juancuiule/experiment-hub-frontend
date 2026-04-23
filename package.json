@@ -9,9 +9,9 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "task:plan": "tsx scripts/planner.ts",
-    "task:review": "tsx scripts/merge-reviewer.ts",
-    "task:run": "tsx scripts/runner.ts"
+    "plan": "tsx scripts/plan.ts",
+    "launch": "bash scripts/launch.sh",
+    "review-merge": "tsx scripts/review-merge.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.90.0",
@@ -26,12 +26,12 @@
     "react-hook-form": "^7.71.2",
     "react-markdown": "^10.1.0",
     "tailwind-merge": "^3.5.0",
-    "tsx": "^4.21.0",
     "zod": "^4.3.6",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "tsx": "^4.21.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
