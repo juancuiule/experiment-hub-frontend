@@ -18,7 +18,7 @@ git checkout -b ${subtask.branch} main 2>/dev/null || git checkout ${subtask.bra
 
 ## Rules
 - Only modify files listed above (and their test files if applicable)
-- Do not modify any other files
+- Never touch config files: .claude/, package.json, .gitignore, tsconfig.json, scripts/
 - After making changes, run tests: \`pnpm test\`
 - Commit all changes before finishing
 
