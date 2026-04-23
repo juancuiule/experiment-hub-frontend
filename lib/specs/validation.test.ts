@@ -263,6 +263,50 @@ describe("slider", () => {
     expect(schema.safeParse({ vol: "75" }).success).toBe(true);
   });
 
+  it("fails when requiresInteraction is set and value is absent", () => {
+    const schema = buildSchema(
+      screen([
+        { componentFamily: "response", template: "slider", props: { dataKey: "vol", label: "Volume", requiresInteraction: {} } },
+      ])
+    );
+    expect(schema.safeParse({}).success).toBe(false);
+  });
+
+  it("passes when requiresInteraction is set and a value is provided", () => {
+    const schema = buildSchema(
+      screen([
+        { componentFamily: "response", template: "slider", props: { dataKey: "vol", label: "Volume", requiresInteraction: {} } },
+      ])
+    );
+    expect(schema.safeParse({ vol: 50 }).success).toBe(true);
+  });
+
+  it("passes when requiresInteraction is set and value is 0", () => {
+    const schema = buildSchema(
+      screen([
+        { componentFamily: "response", template: "slider", props: { dataKey: "vol", label: "Volume", requiresInteraction: {} } },
+      ])
+    );
+    expect(schema.safeParse({ vol: 0 }).success).toBe(true);
+  });
+
+  it("uses custom requiresInteraction errorMessage", () => {
+    const schema = buildSchema(
+      screen([
+        {
+          componentFamily: "response",
+          template: "slider",
+          props: { dataKey: "vol", label: "Volume", requiresInteraction: { errorMessage: "Please move the slider" } },
+        },
+      ])
+    );
+    const result = schema.safeParse({});
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.flatten().fieldErrors.vol).toContain("Please move the slider");
+    }
+  });
+
   it("enforces minValue constraint", () => {
     const schema = buildSchema(
       screen([

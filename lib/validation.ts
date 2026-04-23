@@ -97,11 +97,20 @@ function buildFieldSchema(component: ResponseComponent): z.ZodTypeAny {
           maxValue.errorMessage ?? `Must be at most ${maxValue.value}`,
         );
       if (requiresInteraction) {
-        return z.coerce.number().refine((v) => v !== undefined, {
-          message:
-            requiresInteraction.errorMessage ??
-            "Please interact with the slider",
-        });
+        // Validate raw value first: z.coerce.number() silences NaN with its own message.
+        return z
+          .any()
+          .refine(
+            (v) =>
+              component.template !== "slider" ||
+              (v !== undefined && v !== null && Number.isFinite(Number(v))),
+            {
+              message:
+                requiresInteraction.errorMessage ??
+                "Please interact with the slider",
+            },
+          )
+          .transform(Number);
       }
       return base;
     }
