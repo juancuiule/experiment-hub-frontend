@@ -1,5 +1,6 @@
 import * as fs from "fs";
-import { callOpus } from "./lib/anthropic";
+import { callClaude } from "./lib/claude-cli";
+// import { callOpus } from "./lib/anthropic"; // Switch to this when using API key directly
 import { getBranchDiff, branchExists } from "./lib/git";
 import { parsePlan } from "./lib/types";
 
@@ -55,8 +56,8 @@ ${dependencyList}
 Diffs:
 ${diffs}`;
 
-  console.log("Calling Opus for merge review...\n");
-  const result = await callOpus(REVIEWER_SYSTEM, userMessage);
+  console.log("Calling Claude for merge review...\n");
+  const result = callClaude(REVIEWER_SYSTEM, userMessage);
 
   console.log("=".repeat(60));
   console.log("MERGE REVIEW");

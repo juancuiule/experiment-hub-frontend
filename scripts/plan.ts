@@ -1,5 +1,6 @@
 import * as fs from "fs";
-import { callOpus } from "./lib/anthropic";
+import { callClaude } from "./lib/claude-cli";
+// import { callOpus } from "./lib/anthropic"; // Switch to this when using API key directly
 import { getProjectFileTree } from "./lib/git";
 import { parsePlan } from "./lib/types";
 import { buildWorkerPrompt } from "./lib/prompt";
@@ -46,12 +47,12 @@ async function main() {
   }
 
   console.log("Planning task:", taskDescription);
-  console.log("Calling Opus 4.7...\n");
+  console.log("Calling Claude...\n");
 
   const fileTree = getProjectFileTree();
   const userMessage = `Task: ${taskDescription}\n\nProject file tree:\n${fileTree}`;
 
-  const raw = await callOpus(PLANNER_SYSTEM, userMessage, 8192);
+  const raw = callClaude(PLANNER_SYSTEM, userMessage);
 
   let parsed: unknown;
   try {
