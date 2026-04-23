@@ -56,9 +56,10 @@ async function main() {
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(raw);
+    const cleaned = raw.replace(/^```(?:json)?\s*/m, "").replace(/\s*```\s*$/m, "").trim();
+    parsed = JSON.parse(cleaned);
   } catch {
-    console.error("Opus returned invalid JSON:\n", raw);
+    console.error("Claude returned invalid JSON:\n", raw);
     process.exit(1);
   }
 
