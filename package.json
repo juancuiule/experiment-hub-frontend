@@ -8,9 +8,13 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "task:plan": "tsx scripts/planner.ts",
+    "task:review": "tsx scripts/merge-reviewer.ts",
+    "task:run": "tsx scripts/runner.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.90.0",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-checkbox": "^1.3.3",
     "@radix-ui/react-radio-group": "^1.3.8",
@@ -22,6 +26,7 @@
     "react-hook-form": "^7.71.2",
     "react-markdown": "^10.1.0",
     "tailwind-merge": "^3.5.0",
+    "tsx": "^4.21.0",
     "zod": "^4.3.6",
     "zustand": "^5.0.11"
   },
