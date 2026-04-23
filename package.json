@@ -10,7 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "plan": "tsx scripts/plan.ts",
-    "plan:prompts": "tsx -e \"import {parsePlan} from './scripts/lib/types.ts'; import {buildWorkerPrompt} from './scripts/lib/prompt.ts'; import * as fs from 'fs'; const plan=parsePlan(JSON.parse(fs.readFileSync('.claude-task/plan.json','utf-8'))); for(const s of plan.subtasks){fs.writeFileSync(`.claude-task/${s.id}.md`,buildWorkerPrompt(s));console.log('Written: .claude-task/'+s.id+'.md');}\"",
+    "plan:prompts": "tsx scripts/gen-prompts.ts",
     "launch": "bash scripts/launch.sh",
     "review-merge": "tsx scripts/review-merge.ts"
   },
